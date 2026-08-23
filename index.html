@@ -1,26 +1,86 @@
 <!doctype html>
-<html lang="es">
+<html lang="es-AR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="NODOAGRO: Expertos en estudio agroeconomico y partición rural. Consultoría técnica liderada por ingenieros agrónomos y geógrafos."
+      content="NODOAGRO: Expertos en estudio agroeconómico y partición rural. Consultoría técnica liderada por ingenieros agrónomos y geógrafos en Buenos Aires."
     />
     <meta
       name="keywords"
-      content="estudio agroeconomico, partición rural, agrimensura, consultora agropecuaria, tasacion rural"
+      content="estudio agroeconomico, particion rural, agrimensura, consultora agropecuaria, tasacion rural, Casbas, Buenos Aires"
     />
-    <title>NODOAGRO | Estudio Agroeconomico y Partición Rural</title>
+    <title>NODOAGRO | Estudio Agroeconómico y Partición Rural</title>
 
-    <!-- Google Fonts: Montserrat for a professional look -->
+    <link rel="canonical" href="https://www.nodoagro.com.ar/" />
+
+    <!-- Open Graph (Facebook, LinkedIn, WhatsApp) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.nodoagro.com.ar/" />
+    <meta
+      property="og:title"
+      content="NODOAGRO | Estudio Agroeconómico y Partición Rural"
+    />
+    <meta
+      property="og:description"
+      content="Expertos en estudio agroeconómico y partición rural. Consultoría técnica liderada por ingenieros agrónomos y geógrafos en Buenos Aires."
+    />
+    <meta
+      property="og:image"
+      content="https://www.nodoagro.com.ar/images/estudio-agroeconomico-campo.jpg"
+    />
+    <meta property="og:locale" content="es_AR" />
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="NODOAGRO | Estudio Agroeconómico y Partición Rural"
+    />
+    <meta
+      name="twitter:description"
+      content="Expertos en estudio agroeconómico y partición rural. Consultoría técnica liderada por ingenieros agrónomos y geógrafos en Buenos Aires."
+    />
+    <meta
+      name="twitter:image"
+      content="https://www.nodoagro.com.ar/images/estudio-agroeconomico-campo.jpg"
+    />
+
+    <!-- JSON-LD Schema (Google Local Business) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "ProfessionalService",
+        "name": "NODOAGRO",
+        "image": "https://www.nodoagro.com.ar/images/nodoagro_logo.png",
+        "url": "https://www.nodoagro.com.ar/",
+        "telephone": "+54 9 2929 410181",
+        "email": "nodoagroba@gmail.com",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Casbas",
+          "addressRegion": "Buenos Aires",
+          "addressCountry": "AR"
+        },
+        "description": "Expertos en estudio agroeconómico y partición rural. Consultoría técnica liderada por ingenieros agrónomos y geógrafos.",
+        "areaServed": {
+          "@type": "State",
+          "name": "Buenos Aires"
+        }
+      }
+    </script>
+
+    <!-- Google Fonts Preconnect & Load -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap"
       rel="stylesheet"
     />
-    <!-- Tailwind CSS for styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
 
+    <!-- Tailwind CDN for styling (Reverting to CDN due to compilation issues) -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
       body {
         font-family: "Montserrat", sans-serif;
@@ -28,7 +88,7 @@
       .hero-gradient {
         background:
           linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-          url("images/WhatsApp Image 2026-06-27 at 19.00.00.jpeg");
+          url("images/estudio-agroeconomico-campo.jpg");
         background-size: cover;
         background-position: center;
       }
@@ -43,7 +103,7 @@
         <a href="#" class="flex items-center space-x-3">
           <img
             src="images/nodoagro_logo.png"
-            alt="NODOAGRO logo"
+            alt="NODOAGRO logo consultora agropecuaria"
             class="h-12 w-auto"
           />
           <span class="text-2xl font-bold text-green-700">NODOAGRO</span>
@@ -70,7 +130,7 @@
         <h1
           class="text-4xl md:text-6xl font-bold mb-4 max-w-4xl mx-auto text-balance"
         >
-          Estudios Agroeconomicos Particiones Rurales
+          Estudios Agroeconómicos y Particiones Rurales
         </h1>
         <p class="text-xl md:text-2xl mb-8 max-w-2xl mx-auto"></p>
         <a
@@ -106,7 +166,7 @@
               </svg>
             </div>
             <h3 class="text-2xl font-bold mb-4 text-green-800">
-              Estudio Agroeconomico
+              Estudio Agroeconómico
             </h3>
             <p class="text-gray-600 leading-relaxed text-justify mb-4">
               Realizamos la caracterización ambiental del predio, determinamos
@@ -202,7 +262,7 @@
     </section>
 
     <footer class="bg-green-900 text-white py-8 text-center">
-      <p>&copy; 2022 NodoAgro Consultora. Especialistas en Partición Rural.</p>
+      <p>&copy; 2026 NodoAgro Consultora. Especialistas en Partición Rural.</p>
     </footer>
   </body>
 </html>
