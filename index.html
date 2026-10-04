@@ -15,6 +15,11 @@
 
     <link rel="canonical" href="https://www.nodoagro.com.ar/" />
 
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#15803d" />
+
     <!-- Open Graph (Facebook, LinkedIn, WhatsApp) -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.nodoagro.com.ar/" />
@@ -29,6 +34,12 @@
     <meta
       property="og:image"
       content="https://www.nodoagro.com.ar/images/estudio-agroeconomico-campo.jpg"
+    />
+    <meta property="og:image:width" content="1600" />
+    <meta property="og:image:height" content="1200" />
+    <meta
+      property="og:image:alt"
+      content="Campo de trigo en la Provincia de Buenos Aires"
     />
     <meta property="og:locale" content="es_AR" />
 
@@ -52,9 +63,14 @@
       {
         "@context": "https://schema.org",
         "@type": "ProfessionalService",
+        "@id": "https://www.nodoagro.com.ar/#empresa",
         "name": "NODOAGRO",
-        "image": "https://www.nodoagro.com.ar/images/nodoagro_logo.png",
         "url": "https://www.nodoagro.com.ar/",
+        "logo": "https://www.nodoagro.com.ar/images/nodoagro_logo.png",
+        "image": [
+          "https://www.nodoagro.com.ar/images/nodoagro_logo.png",
+          "https://www.nodoagro.com.ar/images/estudio-agroeconomico-campo.jpg"
+        ],
         "telephone": "+54 9 2929 410181",
         "email": "nodoagroba@gmail.com",
         "address": {
@@ -67,6 +83,42 @@
         "areaServed": {
           "@type": "State",
           "name": "Buenos Aires"
+        },
+        "contactPoint": [
+          {
+            "@type": "ContactPoint",
+            "telephone": "+54 9 2929 410181",
+            "contactType": "customer service",
+            "availableLanguage": "es"
+          },
+          {
+            "@type": "ContactPoint",
+            "telephone": "+54 9 2923 409096",
+            "contactType": "customer service",
+            "availableLanguage": "es"
+          }
+        ],
+        "hasOfferCatalog": {
+          "@type": "OfferCatalog",
+          "name": "Servicios de consultoría agropecuaria",
+          "itemListElement": [
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Estudio Agroeconómico",
+                "description": "Caracterización ambiental del predio, determinación de la actividad productiva y elaboración del estudio agroeconómico conforme a la normativa vigente, con relevamiento a campo y herramientas SIG."
+              }
+            },
+            {
+              "@type": "Offer",
+              "itemOffered": {
+                "@type": "Service",
+                "name": "Partición Rural",
+                "description": "Propuestas de partición de campos para propietarios y herederos, basadas en imágenes satelitales históricas, tipos y usos del suelo, índices ambientales e información obtenida a campo."
+              }
+            }
+          ]
         }
       }
     </script>
@@ -75,24 +127,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
 
-    <!-- Tailwind CDN for styling (Reverting to CDN due to compilation issues) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-      body {
-        font-family: "Montserrat", sans-serif;
-      }
-      .hero-gradient {
-        background:
-          linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-          url("images/estudio-agroeconomico-campo.jpg");
-        background-size: cover;
-        background-position: center;
-      }
-    </style>
+    <!-- Tailwind compilado (fuente en src/input.css, ver README) -->
+    <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body class="bg-gray-50 text-gray-800">
     <!-- Navigation -->
@@ -102,9 +142,11 @@
       >
         <a href="#" class="flex items-center space-x-3">
           <img
-            src="images/nodoagro_logo.png"
+            src="images/nodoagro_logo-96.png"
             alt="NODOAGRO logo consultora agropecuaria"
-            class="h-12 w-auto"
+            width="48"
+            height="48"
+            class="h-12 w-12"
           />
           <span class="text-2xl font-bold text-green-700">NODOAGRO</span>
         </a>
@@ -115,29 +157,70 @@
           <a href="#nosotros" class="hover:text-green-600 transition"
             >Nosotros</a
           >
+          <a href="#preguntas" class="hover:text-green-600 transition"
+            >Preguntas</a
+          >
           <a href="#contacto" class="hover:text-green-600 transition"
             >Contacto</a
           >
         </div>
+        <a
+          href="#contacto"
+          class="md:hidden bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 px-4 rounded-full transition"
+          >Contacto</a
+        >
       </div>
     </nav>
 
     <!-- Hero Section -->
     <header
-      class="hero-gradient h-screen flex items-center justify-center text-white text-center px-4"
+      class="relative min-h-svh flex items-center justify-center text-white text-center px-4 py-16 overflow-hidden"
     >
-      <div>
+      <picture>
+        <source
+          type="image/webp"
+          srcset="
+            images/estudio-agroeconomico-campo-800.webp   800w,
+            images/estudio-agroeconomico-campo.webp      1600w
+          "
+          sizes="100vw"
+        />
+        <img
+          src="images/estudio-agroeconomico-campo.jpg"
+          alt="Campo de trigo en la Provincia de Buenos Aires"
+          width="1600"
+          height="1200"
+          fetchpriority="high"
+          class="absolute inset-0 h-full w-full object-cover"
+        />
+      </picture>
+      <div class="absolute inset-0 bg-black/50"></div>
+      <div class="relative">
         <h1
           class="text-4xl md:text-6xl font-bold mb-4 max-w-4xl mx-auto text-balance"
         >
           Estudios Agroeconómicos y Particiones Rurales
         </h1>
-        <p class="text-xl md:text-2xl mb-8 max-w-2xl mx-auto"></p>
-        <a
-          href="#contacto"
-          class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full transition duration-300"
-          >Solicitar Asesoría</a
+        <p class="text-xl md:text-2xl mb-8 max-w-2xl mx-auto text-balance">
+          Consultoría técnica para propietarios y herederos de campos en la
+          Provincia de Buenos Aires.
+        </p>
+        <div
+          class="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
+          <a
+            href="https://wa.me/5492929410181?text=Hola%2C%20quisiera%20hacer%20una%20consulta%20sobre%20un%20estudio%20agroecon%C3%B3mico%20o%20una%20partici%C3%B3n%20rural."
+            target="_blank"
+            rel="noopener"
+            class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full transition duration-300"
+            >Solicitar Asesoría</a
+          >
+          <a
+            href="#servicios"
+            class="border-2 border-white hover:bg-white hover:text-green-800 text-white font-bold py-3 px-8 rounded-full transition duration-300"
+            >Ver servicios</a
+          >
+        </div>
       </div>
     </header>
 
@@ -148,7 +231,9 @@
           Nuestros Servicios Especializados
         </h2>
         <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          <div class="p-8 border rounded-xl hover:shadow-xl transition">
+          <div
+            class="flex flex-col p-8 border border-gray-200 rounded-xl hover:shadow-xl transition"
+          >
             <div class="text-green-600 mb-4">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -156,6 +241,7 @@
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
+                aria-hidden="true"
               >
                 <path
                   stroke-linecap="round"
@@ -168,19 +254,28 @@
             <h3 class="text-2xl font-bold mb-4 text-green-800">
               Estudio Agroeconómico
             </h3>
-            <p class="text-gray-600 leading-relaxed text-justify mb-4">
+            <p class="text-gray-600 leading-relaxed md:text-justify mb-4">
               Realizamos la caracterización ambiental del predio, determinamos
               la actividad productiva que le corresponde y elaboramos el estudio
               agroeconómico conforme a la normativa vigente.
             </p>
-            <p class="text-gray-600 leading-relaxed text-justify">
+            <p class="text-gray-600 leading-relaxed md:text-justify mb-6">
               Cada estudio se elabora con relevamiento a campo y herramientas
               SIG, adaptándose a las condiciones particulares del predio. Es,
               además, el punto de partida para cualquier proyecto de partición
               rural.
             </p>
+            <a
+              href="https://wa.me/5492929410181?text=Hola%2C%20quisiera%20consultar%20por%20un%20estudio%20agroecon%C3%B3mico."
+              target="_blank"
+              rel="noopener"
+              class="mt-auto font-bold text-green-700 hover:text-green-900 transition"
+              >Consultar por un estudio agroeconómico &rarr;</a
+            >
           </div>
-          <div class="p-8 border rounded-xl hover:shadow-xl transition">
+          <div
+            class="flex flex-col p-8 border border-gray-200 rounded-xl hover:shadow-xl transition"
+          >
             <div class="text-green-600 mb-4">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -188,6 +283,7 @@
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
+                aria-hidden="true"
               >
                 <path
                   stroke-linecap="round"
@@ -200,13 +296,13 @@
             <h3 class="text-2xl font-bold mb-4 text-green-800">
               Particiones Rurales
             </h3>
-            <p class="text-gray-600 leading-relaxed text-justify mb-4">
+            <p class="text-gray-600 leading-relaxed md:text-justify mb-4">
               Trabajamos con propietarios y herederos en la formulación de
               propuestas de partición de campos, realizando los ajustes
               necesarios para llegar a soluciones equitativas y viables para
               todas las partes.
             </p>
-            <p class="text-gray-600 leading-relaxed text-justify">
+            <p class="text-gray-600 leading-relaxed md:text-justify mb-6">
               Nuestras propuestas se basan en el análisis de imágenes
               satelitales históricas, tipos y usos del suelo, índices
               ambientales, datos geográficos e información obtenida a campo.
@@ -214,6 +310,13 @@
               diferenciar ambientes con precisión y asignar valores justos a
               cada fracción.
             </p>
+            <a
+              href="https://wa.me/5492929410181?text=Hola%2C%20quisiera%20consultar%20por%20una%20partici%C3%B3n%20rural."
+              target="_blank"
+              rel="noopener"
+              class="mt-auto font-bold text-green-700 hover:text-green-900 transition"
+              >Consultar por una partición rural &rarr;</a
+            >
           </div>
         </div>
       </div>
@@ -224,7 +327,7 @@
       <div class="container mx-auto px-6 text-center">
         <h2 class="text-3xl font-bold mb-8">Un Equipo Interdisciplinario</h2>
         <p
-          class="max-w-3xl mx-auto text-lg text-gray-700 leading-relaxed text-justify"
+          class="max-w-3xl mx-auto text-lg text-gray-700 leading-relaxed text-left md:text-justify"
         >
           Nuestro equipo combina la Ingeniería Agronómica y la Geografía con
           herramientas tecnológicas modernas. Trabajamos con Sistemas de
@@ -234,22 +337,132 @@
       </div>
     </section>
 
+    <!-- FAQ Section -->
+    <section id="preguntas" class="py-20 bg-white">
+      <div class="container mx-auto px-6">
+        <h2 class="text-3xl font-bold text-center mb-12 text-gray-900">
+          Preguntas Frecuentes
+        </h2>
+        <div class="max-w-3xl mx-auto divide-y divide-gray-200">
+          <div class="py-6">
+            <h3 class="text-xl font-bold mb-2 text-green-800">
+              ¿Qué incluye un estudio agroeconómico?
+            </h3>
+            <p class="text-gray-600 leading-relaxed">
+              La caracterización ambiental del predio, la determinación de la
+              actividad productiva que le corresponde y la elaboración del
+              estudio conforme a la normativa vigente. Combinamos relevamiento a
+              campo con herramientas SIG para adaptarnos a las condiciones
+              particulares de cada campo.
+            </p>
+          </div>
+          <div class="py-6">
+            <h3 class="text-xl font-bold mb-2 text-green-800">
+              ¿Por qué el estudio agroeconómico es el primer paso de una
+              partición rural?
+            </h3>
+            <p class="text-gray-600 leading-relaxed">
+              Porque caracteriza el ambiente y la actividad productiva del
+              campo. Con esa información se trabaja después la propuesta de
+              partición.
+            </p>
+          </div>
+          <div class="py-6">
+            <h3 class="text-xl font-bold mb-2 text-green-800">
+              ¿Cómo se llega a una partición equitativa entre herederos?
+            </h3>
+            <p class="text-gray-600 leading-relaxed">
+              Analizamos imágenes satelitales históricas, tipos y usos del
+              suelo, índices ambientales, datos geográficos e información
+              obtenida a campo. Así evaluamos la potencialidad real de cada
+              zona, diferenciamos ambientes y asignamos valores justos a cada
+              fracción. Luego trabajamos con propietarios y herederos los
+              ajustes necesarios hasta llegar a una solución viable para todas
+              las partes.
+            </p>
+          </div>
+          <div class="py-6">
+            <h3 class="text-xl font-bold mb-2 text-green-800">
+              ¿En qué zonas trabajan?
+            </h3>
+            <p class="text-gray-600 leading-relaxed">
+              Tenemos base en Casbas y realizamos proyectos en toda la Provincia
+              de Buenos Aires.
+            </p>
+          </div>
+          <div class="py-6">
+            <h3 class="text-xl font-bold mb-2 text-green-800">
+              ¿Cómo hago una consulta?
+            </h3>
+            <p class="text-gray-600 leading-relaxed">
+              Escribinos por
+              <a
+                href="https://wa.me/5492929410181"
+                target="_blank"
+                rel="noopener"
+                class="text-green-700 font-bold underline hover:text-green-900"
+                >WhatsApp</a
+              >, llamanos o envianos un
+              <a
+                href="mailto:nodoagroba@gmail.com"
+                class="text-green-700 font-bold underline hover:text-green-900"
+                >email</a
+              >. Te respondemos para conocer el caso y coordinar los próximos
+              pasos.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Contact Section -->
-    <section id="contacto" class="py-20 bg-white">
+    <section id="contacto" class="py-20 bg-gray-100">
       <div class="container mx-auto px-6">
         <h2 class="text-3xl font-bold text-center mb-12">Contáctenos</h2>
-        <div class="max-w-lg mx-auto bg-gray-50 p-8 rounded-lg shadow">
+        <div class="max-w-lg mx-auto bg-white p-8 rounded-lg shadow-sm">
+          <a
+            href="https://wa.me/5492929410181?text=Hola%2C%20quisiera%20hacer%20una%20consulta%20sobre%20un%20estudio%20agroecon%C3%B3mico%20o%20una%20partici%C3%B3n%20rural."
+            target="_blank"
+            rel="noopener"
+            class="flex items-center justify-center gap-3 mb-8 bg-[#25D366] hover:bg-[#1ebe5b] text-white font-bold py-3 px-6 rounded-full transition"
+          >
+            <svg
+              class="h-6 w-6"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"
+              />
+            </svg>
+            Escribinos por WhatsApp
+          </a>
           <div class="mb-6">
-            <h4 class="font-bold text-green-800">Email</h4>
-            <p>nodoagroba@gmail.com</p>
+            <h3 class="font-bold text-green-800">Email</h3>
+            <p>
+              <a
+                href="mailto:nodoagroba@gmail.com"
+                class="hover:text-green-700 underline"
+                >nodoagroba@gmail.com</a
+              >
+            </p>
           </div>
           <div class="mb-6">
-            <h4 class="font-bold text-green-800">Teléfonos</h4>
-            <p>2929 - 410181</p>
-            <p>2923 - 409096</p>
+            <h3 class="font-bold text-green-800">Teléfonos</h3>
+            <p>
+              <a href="tel:+5492929410181" class="hover:text-green-700 underline"
+                >2929 - 410181</a
+              >
+            </p>
+            <p>
+              <a href="tel:+5492923409096" class="hover:text-green-700 underline"
+                >2923 - 409096</a
+              >
+            </p>
           </div>
           <div class="mb-6">
-            <h4 class="font-bold text-green-800">Ubicación</h4>
+            <h3 class="font-bold text-green-800">Ubicación</h3>
             <p>Casbas, Buenos Aires.</p>
           </div>
           <div>
@@ -264,5 +477,25 @@
     <footer class="bg-green-900 text-white py-8 text-center">
       <p>&copy; 2026 NodoAgro Consultora. Especialistas en Partición Rural.</p>
     </footer>
+
+    <!-- Botón flotante de WhatsApp -->
+    <a
+      href="https://wa.me/5492929410181?text=Hola%2C%20quisiera%20hacer%20una%20consulta%20sobre%20un%20estudio%20agroecon%C3%B3mico%20o%20una%20partici%C3%B3n%20rural."
+      target="_blank"
+      rel="noopener"
+      aria-label="Escribinos por WhatsApp"
+      class="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition hover:scale-110"
+    >
+      <svg
+        class="h-8 w-8"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"
+        />
+      </svg>
+    </a>
   </body>
 </html>

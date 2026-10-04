@@ -1,0 +1,12 @@
+{
+  "name": "landing-nodoagro",
+  "private": true,
+  "scripts": {
+    "build": "tailwindcss -i src/input.css -o css/styles.css --minify",
+    "watch": "tailwindcss -i src/input.css -o css/styles.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "4.3.3",
+    "tailwindcss": "4.3.3"
+  }
+}
