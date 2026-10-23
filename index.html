@@ -133,7 +133,7 @@
     />
 
     <!-- Tailwind compilado (fuente en src/input.css, ver README) -->
-    <link rel="stylesheet" href="css/styles.css?v=20261013" />
+    <link rel="stylesheet" href="css/styles.css?v=20261023" />
   </head>
   <body class="bg-gray-50 text-gray-800">
     <!-- Navigation -->
@@ -154,6 +154,9 @@
         <div class="hidden md:flex space-x-8 font-medium">
           <a href="#servicios" class="hover:text-green-600 transition"
             >Servicios</a
+          >
+          <a href="monitor/" class="hover:text-green-600 transition"
+            >Monitor satelital</a
           >
           <a href="#nosotros" class="hover:text-green-600 transition"
             >Nosotros</a
@@ -313,6 +316,11 @@
                 cada fracción.
               </p>
               <a
+                href="monitor/"
+                class="mb-4 font-medium text-green-700 underline hover:text-green-900 transition"
+                >Mirá cómo usamos las imágenes satelitales</a
+              >
+              <a
                 href="https://wa.me/5492929410181?text=Hola%2C%20quisiera%20consultar%20por%20una%20partici%C3%B3n%20rural."
                 target="_blank"
                 rel="noopener"
@@ -321,6 +329,44 @@
               >
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- Monitor satelital: la imagen es la última quincena (la copia armar_sitio.py) -->
+      <section id="monitor" class="py-20 bg-green-900 text-white">
+        <div
+          class="container mx-auto px-6 grid md:grid-cols-2 gap-10 items-center max-w-5xl"
+        >
+          <div>
+            <h2 class="text-3xl font-bold mb-6">
+              Monitor Satelital de Campos
+            </h2>
+            <p class="text-lg text-green-50 leading-relaxed mb-4">
+              Cada 15 días publicamos el vigor de la vegetación, el agua en
+              superficie y la humedad de los campos de Guaminí, Adolfo Alsina,
+              Coronel Suárez, Daireaux, Salliqueló, Trenque Lauquen y Tres Lomas,
+              con imágenes del satélite Sentinel-2.
+            </p>
+            <p class="text-green-100 leading-relaxed mb-8">
+              Son las mismas herramientas que usamos para diferenciar ambientes y
+              valuar cada fracción en una partición rural.
+            </p>
+            <a
+              href="monitor/"
+              class="inline-block bg-white hover:bg-green-100 text-green-900 font-bold py-3 px-8 rounded-full transition duration-300"
+              >Ver el monitor</a
+            >
+          </div>
+          <a href="monitor/" class="block">
+            <img
+              src="monitor/data/og-monitor.jpg"
+              alt="Mapa de vigor de la vegetación de la última quincena en Guaminí y partidos vecinos"
+              width="1200"
+              height="630"
+              loading="lazy"
+              class="w-full rounded-xl shadow-lg"
+            />
+          </a>
         </div>
       </section>
 

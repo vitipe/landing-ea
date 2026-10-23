@@ -1,2 +1,8 @@
 .DS_Store
 node_modules/
+# Monitor satelital: salidas del pipeline y sitio armado (los rásters viven en el release monitor-datos)
+_site/
+salida/
+monitor/data/cog/
+__pycache__/
+.venv/

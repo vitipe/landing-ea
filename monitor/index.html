@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="es-AR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitor satelital de campos: Guaminí y la zona | NODOAGRO</title>
+    <meta
+      name="description"
+      content="Cómo están los campos de Guaminí, Adolfo Alsina, Coronel Suárez, Daireaux, Salliqueló, Trenque Lauquen y Tres Lomas: vigor (NDVI), agua en superficie y humedad (NDMI) cada 15 días, con imágenes Sentinel-2."
+    />
+    <link rel="canonical" href="https://www.nodoagro.com.ar/monitor/" />
+
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#15803d" />
+
+    <!-- Open Graph: data/og-monitor.jpg es la última quincena (lo copia armar_sitio.py) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="NODOAGRO" />
+    <meta property="og:url" content="https://www.nodoagro.com.ar/monitor/" />
+    <meta property="og:title" content="Monitor satelital de campos | NODOAGRO" />
+    <meta
+      property="og:description"
+      content="Vigor, agua y humedad de los campos de Guaminí y la zona, actualizado cada 15 días con imágenes Sentinel-2."
+    />
+    <meta property="og:image" content="https://www.nodoagro.com.ar/monitor/data/og-monitor.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Mapa de vigor de la vegetación (NDVI) de la última quincena en Guaminí y partidos vecinos" />
+    <meta property="og:locale" content="es_AR" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Monitor satelital de campos | NODOAGRO" />
+    <meta
+      name="twitter:description"
+      content="Vigor, agua y humedad de los campos de Guaminí y la zona, actualizado cada 15 días con imágenes Sentinel-2."
+    />
+    <meta name="twitter:image" content="https://www.nodoagro.com.ar/monitor/data/og-monitor.jpg" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css?v=20261023" />
+  </head>
+  <body>
+    <div id="mapa"></div>
+
+    <aside id="panel">
+      <header>
+        <a class="marca" href="../">
+          <img src="../images/nodoagro_logo-96.png" alt="" width="32" height="32" />
+          NODOAGRO
+        </a>
+        <h1>Monitor satelital de campos</h1>
+        <p class="sub">
+          Guaminí, Adolfo Alsina, Coronel Suárez, Daireaux, Salliqueló, Trenque
+          Lauquen y Tres Lomas. Se actualiza cada 15 días con imágenes Sentinel-2.
+        </p>
+        <p id="aviso-demo" class="aviso" hidden>Datos sintéticos de demostración, no son mediciones reales.</p>
+        <p id="aviso" class="aviso" hidden></p>
+      </header>
+
+      <section id="controles" hidden>
+        <div class="indices" role="group" aria-label="Índice">
+          <button type="button" data-indice="ndvi">Vigor</button>
+          <button type="button" data-indice="mndwi">Agua</button>
+          <button type="button" data-indice="ndmi">Humedad</button>
+        </div>
+        <p id="explica" class="explica"></p>
+        <div id="leyenda" class="leyenda"></div>
+
+        <label for="quincena">Quincena</label>
+        <select id="quincena"></select>
+        <p id="fechas" class="nota"></p>
+
+        <label for="opacidad">Transparencia de la capa</label>
+        <input type="range" id="opacidad" min="0" max="100" value="15" />
+        <p class="nota">Tocá el mapa para ver el valor en un punto.</p>
+      </section>
+
+      <section id="seccion-partido" hidden>
+        <label for="partido">Partido</label>
+        <select id="partido"></select>
+        <dl id="cifras"></dl>
+        <h2 id="titulo-grafico">Evolución en el año</h2>
+        <div class="grafico"><canvas id="grafico"></canvas></div>
+        <p id="nota-grafico" class="nota"></p>
+      </section>
+
+      <section class="cta">
+        <h2>¿Tenés que dividir un campo?</h2>
+        <p>
+          Usamos estas mismas imágenes e índices, junto con el historial satelital
+          del lote y el relevamiento a campo, para diferenciar ambientes y valuar
+          cada fracción en una partición rural.
+        </p>
+        <a
+          class="boton-wa"
+          href="https://wa.me/5492929410181?text=Hola%2C%20vi%20el%20monitor%20satelital%20y%20quer%C3%ADa%20consultar%20por%20una%20partici%C3%B3n%20rural."
+          target="_blank"
+          rel="noopener"
+          >Consultanos por WhatsApp</a
+        >
+        <a class="enlace" href="../#servicios">Conocé nuestros servicios</a>
+      </section>
+
+      <footer class="pie">
+        <p id="actualizado"></p>
+        <p>Información orientativa: no reemplaza el relevamiento a campo.</p>
+        <p>
+          Contiene datos modificados de Copernicus Sentinel <span id="anio-copernicus"></span>, procesados por
+          NODOAGRO. Mapa base © OpenStreetMap.
+        </p>
+      </footer>
+    </aside>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/geotiff@2.1.3/dist-browser/geotiff.js"></script>
+    <script src="app.js?v=20261023"></script>
+  </body>
+</html>
