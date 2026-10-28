@@ -55,7 +55,8 @@ jobs:
 
   unir:
     needs: anio
-    if: always()
+    # Une aunque falle algún año, pero no si se canceló la corrida
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
