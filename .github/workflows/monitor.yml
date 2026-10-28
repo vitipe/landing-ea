@@ -42,6 +42,7 @@ jobs:
         run: python pipeline/01_quincena.py ${QUINCENA:+--quincena "$QUINCENA"}
         env:
           QUINCENA: ${{ inputs.quincena }}
+          PYTHONUNBUFFERED: "1"
 
       - name: Subir rásters y podar el release
         run: |

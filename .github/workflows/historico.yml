@@ -46,6 +46,8 @@ jobs:
           cache-dependency-path: pipeline/requirements.txt
       - run: pip install -r pipeline/requirements.txt
       - run: python pipeline/02_historico.py --anio ${{ matrix.anio }} --salida salida/serie_${{ matrix.anio }}.json
+        env:
+          PYTHONUNBUFFERED: "1"   # si el runner se corta, el log muestra hasta qué quincena llegó
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -92,6 +94,8 @@ jobs:
 
   publicar:
     needs: unir
+    # Sin esto se saltea si falló algún año, aunque unir haya commiteado los demás
+    if: ${{ !cancelled() && needs.unir.result == 'success' }}
     permissions:
       contents: read
       pages: write

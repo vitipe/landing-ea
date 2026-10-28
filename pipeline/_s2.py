@@ -165,7 +165,9 @@ def indices(refl, mascara):
 
 def componer(idx, mascara):
     """Mediana de la quincena, observaciones útiles por píxel y píxeles útiles por pasada."""
-    idx = idx.chunk({"time": -1})
+    # Todo el eje time en un bloque para la mediana, con bloques espaciales más chicos que
+    # los de lectura: con 16 hilos, los de CHUNK_PX llegaban a cortar el runner por memoria
+    idx = idx.chunk({"time": -1, "y": config.CHUNK_PX // 2, "x": config.CHUNK_PX // 2})
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", "All-NaN slice")
         mediana = idx.median("time", skipna=True)
