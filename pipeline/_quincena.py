@@ -38,16 +38,14 @@ def procesar(desde, hasta, partidos, rasters=True):
         entrada["motivo"] = "sin imágenes útiles"
         return {}, entrada
 
-    ds = _s2.cargar(items, zona)
-    mascara = _s2.enmascarar(ds)
-    idx = _s2.indices(_s2.reflectancia(ds, items), mascara)
+    idx, mascara, geobox = _s2.cubo(items, zona)
     mediana, n_obs, aporte = _s2.componer(idx, mascara)
     with dask.config.set(scheduler="threads", num_workers=_s2.HILOS_LECTURA):
         mediana, n_obs, aporte = dask.compute(mediana, n_obs, aporte)
-    print(f"{qid}: cubo {dict(ds.sizes)} calculado en {time.time() - t0:.0f} s")
+    print(f"{qid}: cubo {dict(idx.sizes)} calculado en {time.time() - t0:.0f} s")
 
     calculo = partidos.to_crs(config.CRS_CALCULO)
-    etiq = _salidas.etiquetas(calculo, ds.odc.geobox)
+    etiq = _salidas.etiquetas(calculo, geobox)
     valores = {k: mediana[k].values for k in mediana.data_vars}
     filas, valido_zona = _salidas.estadisticas(valores, n_obs.values, etiq, list(partidos["nombre"]))
 

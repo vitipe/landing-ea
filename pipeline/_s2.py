@@ -1,5 +1,6 @@
 """Sentinel-2 L2A de Earth Search: búsqueda, carga, máscara de nubes e índices."""
 import warnings
+from collections import defaultdict
 
 import dask.array as dsa
 import numpy as np
@@ -69,18 +70,49 @@ def _escala(item, banda):
     return rb.get("scale", 1.0), rb.get("offset", 0.0)
 
 
-def cargar(items, zona):
-    """Cubo (time, y, x) en la grilla de cálculo; una capa por pasada (solar_day)."""
+def _calibracion(item):
+    return tuple(_escala(item, b) for b in bandas_reflectancia())
+
+
+def cargar(items, zona, geobox=None):
+    """Cubo (time, y, x) en la grilla de cálculo; una capa por pasada (solar_day).
+
+    Con geobox, en esa grilla (para alinear con otro cubo); si no, la de la zona.
+    """
+    if geobox is None:
+        grilla = {"geopolygon": Geometry(zona, "EPSG:4326"), "crs": config.CRS_CALCULO,
+                  "resolution": config.RESOLUCION_M}
+    else:
+        grilla = {"geobox": geobox}
     return odc.stac.load(
         items,
         bands=bandas_reflectancia() + ["scl"],
-        geopolygon=Geometry(zona, "EPSG:4326"),
-        crs=config.CRS_CALCULO,
-        resolution=config.RESOLUCION_M,
         groupby="solar_day",
         chunks={"x": config.CHUNK_PX, "y": config.CHUNK_PX},
         resampling={"scl": "nearest", "*": "average"},
+        **grilla,
     )
+
+
+def cubo(items, zona):
+    """Índices y máscara (time, y, x) de todas las escenas, y la grilla de cálculo.
+
+    odc.stac no aplica scale/offset, y en COLECCION_RESPALDO hay escenas viejas sin el
+    offset de BOA (offset 0 en lugar de -0.1). Por eso se carga aparte cada grupo con
+    la misma calibración y se juntan en el eje time. Si dos grupos caen el mismo día
+    quedan dos capas de ese día, que solo se superponen en el borde entre teselas.
+    """
+    grupos = defaultdict(list)
+    for it in items:
+        grupos[_calibracion(it)].append(it)
+    geobox, idx, mascaras = None, [], []
+    for grupo in grupos.values():
+        ds = cargar(grupo, zona, geobox)
+        geobox = ds.odc.geobox
+        mascara = enmascarar(ds)
+        idx.append(indices(reflectancia(ds, grupo), mascara))
+        mascaras.append(mascara)
+    return xr.concat(idx, "time"), xr.concat(mascaras, "time"), geobox
 
 
 def reflectancia(ds, items):
