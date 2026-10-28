@@ -1,0 +1,40 @@
+# Arma _site/ con armar_sitio.py (landing + monitor + rásters del release
+# monitor-datos) y lo publica en GitHub Pages.
+# En el repo: Settings → Pages → Source: GitHub Actions.
+name: Publicar sitio
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:      # lo llama monitor.yml después de cada quincena
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    # A nivel de job (no de workflow) para no trabarse con el grupo de monitor.yml cuando lo llama
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      # ref: la rama, no el commit que disparó el workflow, para incluir los JSON que acaba de commitear monitor.yml
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - run: python3 armar_sitio.py --release
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4

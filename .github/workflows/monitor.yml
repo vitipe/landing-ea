@@ -1,0 +1,70 @@
+# Cada quincena: calcula los índices de Sentinel-2 (pipeline/01_quincena.py), sube los
+# rásters al release monitor-datos, poda los viejos, commitea los JSON y publica el sitio.
+# El commit de cada corrida también evita que GitHub apague el cron por inactividad (60 días).
+name: Monitor satelital
+
+on:
+  schedule:
+    - cron: "0 9 3,18 * *"     # 06:00 en Argentina; deja 2-3 días para que estén las escenas
+  workflow_dispatch:
+    inputs:
+      quincena:
+        description: "Inicio de la quincena (AAAA-MM-01 o AAAA-MM-16). Vacío: la última cerrada"
+        required: false
+
+concurrency:
+  group: monitor
+  cancel-in-progress: false
+
+jobs:
+  quincena:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE: monitor-datos
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: pipeline/requirements.txt
+      - run: pip install -r pipeline/requirements.txt
+
+      - name: Calcular la quincena
+        run: python pipeline/01_quincena.py ${QUINCENA:+--quincena "$QUINCENA"}
+        env:
+          QUINCENA: ${{ inputs.quincena }}
+
+      - name: Subir rásters y podar el release
+        run: |
+          gh release view "$RELEASE" >/dev/null 2>&1 || gh release create "$RELEASE" --latest=false \
+            --title "Datos del monitor satelital" \
+            --notes "Rásters publicados en /monitor/. Los mantiene el workflow Monitor satelital: no editar a mano."
+          if compgen -G "salida/*" >/dev/null; then gh release upload "$RELEASE" salida/* --clobber; fi
+          # Quedan solo los archivos que nombra quincenas.json
+          python3 -c "import json; q = json.load(open('monitor/data/quincenas.json')); print('\n'.join(f.split('/')[-1] for e in q['quincenas'] for f in [*e.get('archivos', {}).values(), e.get('og', '')] if f))" > conservar.txt
+          gh release view "$RELEASE" --json assets -q '.assets[].name' | while read -r asset; do
+            grep -qxF "$asset" conservar.txt || gh release delete-asset "$RELEASE" "$asset" -y
+          done
+
+      - name: Commit de los JSON
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add monitor/data/serie.json monitor/data/quincenas.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Monitor: $(python3 -c "import json; print(json.load(open('monitor/data/quincenas.json'))['quincenas'][0]['id'])")"
+            git push
+          fi
+
+  publicar:
+    needs: quincena
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/publicar.yml

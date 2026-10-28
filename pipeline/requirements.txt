@@ -1,0 +1,17 @@
+# Pipeline del monitor (probado con Python 3.14). En CI: pip install -r pipeline/requirements.txt
+dask==2026.8.0
+geopandas==1.2.0
+matplotlib==3.11.2
+numpy==2.5.4
+odc-geo==0.5.3
+odc-loader==0.6.5
+odc-stac==0.5.3
+pandas==3.1.0
+pillow==13.0.0
+pyproj==3.8.0
+pystac==1.15.2
+pystac-client==0.9.1
+rasterio==1.5.2
+rioxarray==0.23.0
+shapely==2.2.0
+xarray==2026.9.0
