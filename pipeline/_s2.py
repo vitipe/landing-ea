@@ -27,22 +27,26 @@ def bandas_reflectancia():
     return sorted({b for par in config.INDICES.values() for b in par})
 
 
-def _pasada(item):
-    """(tesela MGRS, día): identifica la misma pasada en las dos colecciones."""
+def _toma(item):
+    """(tesela MGRS, satélite, día): la misma toma en las dos colecciones o reprocesada.
+
+    Con el satélite: en 2025-2026 dos satélites pasan por la misma tesela el mismo día.
+    """
     p = item.properties
-    return p["mgrs:utm_zone"], p["mgrs:latitude_band"], p["mgrs:grid_square"], item.datetime.date()
+    return p["mgrs:utm_zone"], p["mgrs:latitude_band"], p["mgrs:grid_square"], p.get("platform"), item.datetime.date()
 
 
-def _prioridad(item):
+def _version(item):
     """Mayor es mejor: primero COLECCION, después el procesamiento más nuevo."""
     return item.collection_id == config.COLECCION, item.properties.get("s2:processing_baseline", "")
 
 
 def buscar(desde, hasta, zona):
-    """Escenas entre dos fechas (inclusive) que tocan la zona (lon/lat), una por pasada.
+    """Escenas entre dos fechas (inclusive) que tocan la zona (lon/lat).
 
-    Busca en COLECCION y en COLECCION_RESPALDO; si una pasada está en las dos (o
-    repetida con otro procesamiento), queda la de _prioridad.
+    Busca en COLECCION y en COLECCION_RESPALDO. De cada toma (ver _toma) quedan todos
+    los productos de su mejor _version y no uno solo: una tesela que cae entre dos
+    datastrips viene en dos productos, cada uno con una parte.
     Con el polígono y no con el bbox: la zona es diagonal y el bbox suma teselas de
     las esquinas que no tocan ningún partido.
     """
@@ -52,17 +56,18 @@ def buscar(desde, hasta, zona):
         datetime=f"{desde}T00:00:00Z/{hasta}T23:59:59Z",
         query={"eo:cloud_cover": {"lt": config.NUBES_MAX_ESCENA}},
     )
-    por_pasada = {}
+    por_toma = defaultdict(list)
     for it in busqueda.items():
         # Parte de COLECCION_RESPALDO (sobre todo 2018) apunta a s3://sentinel-s2-l2a,
         # un bucket donde paga el que descarga: sin credenciales de AWS no se puede leer
         if not all(it.assets[b].href.startswith("https://") for b in bandas_reflectancia() + ["scl"]
                    if b in it.assets):
             continue
-        clave = _pasada(it)
-        if clave not in por_pasada or _prioridad(it) > _prioridad(por_pasada[clave]):
-            por_pasada[clave] = it
-    items = list(por_pasada.values())
+        por_toma[_toma(it)].append(it)
+    items = []
+    for productos in por_toma.values():
+        mejor = max(_version(it) for it in productos)
+        items += [it for it in productos if _version(it) == mejor]
     faltan = {b for it in items for b in bandas_reflectancia() + ["scl"] if b not in it.assets}
     if faltan:
         raise SystemExit(f"Las escenas no traen los assets {sorted(faltan)}: revisá COLECCION e INDICES")
