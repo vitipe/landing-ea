@@ -54,6 +54,11 @@ def buscar(desde, hasta, zona):
     )
     por_pasada = {}
     for it in busqueda.items():
+        # Parte de COLECCION_RESPALDO (sobre todo 2018) apunta a s3://sentinel-s2-l2a,
+        # un bucket donde paga el que descarga: sin credenciales de AWS no se puede leer
+        if not all(it.assets[b].href.startswith("https://") for b in bandas_reflectancia() + ["scl"]
+                   if b in it.assets):
+            continue
         clave = _pasada(it)
         if clave not in por_pasada or _prioridad(it) > _prioridad(por_pasada[clave]):
             por_pasada[clave] = it
