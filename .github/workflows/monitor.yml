@@ -26,7 +26,11 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       RELEASE: monitor-datos
     steps:
+      # El main de ahora y no el commit del disparo: si otra corrida commiteó los JSON
+      # mientras esta esperaba en la cola, el push choca
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - uses: actions/setup-python@v5
         with:
           python-version: "3.14"

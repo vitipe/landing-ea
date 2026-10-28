@@ -26,13 +26,23 @@ args = p.parse_args()
 partidos = _quincena.leer_partidos()
 nombres = list(partidos["nombre"])
 
+def valido_medio(filas):
+    """Promedio del % con dato de los partidos: para elegir entre dos cálculos de la misma quincena."""
+    valores = [f.get("valido_pct") or 0 for f in filas.values()]
+    return sum(valores) / max(len(valores), 1)
+
+
 if args.unir:
     serie = _datos.leer_serie()
     for ruta in args.unir:
         parcial = _datos.leer_serie(ruta)
+        # Una quincena que ya estaba solo se pisa si el cálculo nuevo tiene más dato
+        # (por ejemplo, al sumar escenas de COLECCION_RESPALDO)
         nuevas = {q: f for q, f in parcial.items() if q not in serie}
-        serie.update(nuevas)
-        print(f"{ruta.name}: {len(nuevas)} quincenas nuevas (las que ya estaban no se pisan)")
+        mejores = {q: f for q, f in parcial.items()
+                   if q in serie and valido_medio(f) > valido_medio(serie[q])}
+        serie.update(nuevas | mejores)
+        print(f"{ruta.name}: {len(nuevas)} quincenas nuevas, {len(mejores)} mejoradas")
     _datos.escribir_serie(serie, nombres)
     raise SystemExit
 

@@ -26,19 +26,37 @@ def bandas_reflectancia():
     return sorted({b for par in config.INDICES.values() for b in par})
 
 
-def buscar(desde, hasta, zona):
-    """Escenas de la colección entre dos fechas (inclusive) que tocan la zona (lon/lat).
+def _pasada(item):
+    """(tesela MGRS, día): identifica la misma pasada en las dos colecciones."""
+    p = item.properties
+    return p["mgrs:utm_zone"], p["mgrs:latitude_band"], p["mgrs:grid_square"], item.datetime.date()
 
+
+def _prioridad(item):
+    """Mayor es mejor: primero COLECCION, después el procesamiento más nuevo."""
+    return item.collection_id == config.COLECCION, item.properties.get("s2:processing_baseline", "")
+
+
+def buscar(desde, hasta, zona):
+    """Escenas entre dos fechas (inclusive) que tocan la zona (lon/lat), una por pasada.
+
+    Busca en COLECCION y en COLECCION_RESPALDO; si una pasada está en las dos (o
+    repetida con otro procesamiento), queda la de _prioridad.
     Con el polígono y no con el bbox: la zona es diagonal y el bbox suma teselas de
     las esquinas que no tocan ningún partido.
     """
     cliente = Client.open(config.STAC_URL)
     busqueda = cliente.search(
-        collections=[config.COLECCION], intersects=mapping(zona.simplify(0.01)),
+        collections=[config.COLECCION, config.COLECCION_RESPALDO], intersects=mapping(zona.simplify(0.01)),
         datetime=f"{desde}T00:00:00Z/{hasta}T23:59:59Z",
         query={"eo:cloud_cover": {"lt": config.NUBES_MAX_ESCENA}},
     )
-    items = list(busqueda.items())
+    por_pasada = {}
+    for it in busqueda.items():
+        clave = _pasada(it)
+        if clave not in por_pasada or _prioridad(it) > _prioridad(por_pasada[clave]):
+            por_pasada[clave] = it
+    items = list(por_pasada.values())
     faltan = {b for it in items for b in bandas_reflectancia() + ["scl"] if b not in it.assets}
     if faltan:
         raise SystemExit(f"Las escenas no traen los assets {sorted(faltan)}: revisá COLECCION e INDICES")

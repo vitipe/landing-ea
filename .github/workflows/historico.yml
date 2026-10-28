@@ -60,7 +60,11 @@ jobs:
     permissions:
       contents: write
     steps:
+      # El main de ahora y no el commit del disparo: los años tardan horas y mientras
+      # tanto Monitor satelital puede haber commiteado serie.json (si no, el rebase choca)
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - uses: actions/setup-python@v5
         with:
           python-version: "3.14"

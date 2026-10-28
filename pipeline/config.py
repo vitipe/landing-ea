@@ -14,6 +14,9 @@ RELEASE = "monitor-datos"        # release de GitHub donde viven los rásters pu
 # --- Fuente --------------------------------------------------------------------
 STAC_URL = "https://earth-search.aws.element84.com/v1"
 COLECCION = "sentinel-2-c1-l2a"  # Nivel 2A: reflectancia de superficie (BOA), Collection 1
+COLECCION_RESPALDO = "sentinel-2-l2a"  # completa las pasadas que faltan en COLECCION (tiene huecos
+                                       # grandes en 2017, 2018 y 2022, y sueltos en otros años).
+                                       # Mismos assets y scale/offset: el offset de BOA ya viene aplicado
 NUBES_MAX_ESCENA = 95            # % de nubes de la tesela entera: solo descarta las tapadas del todo;
                                  # lo que decide es la máscara SCL píxel a píxel
 SCL_VALIDAS = [4, 5, 6]          # vegetación, suelo desnudo, agua
