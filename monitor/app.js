@@ -38,7 +38,7 @@ const INDICES = {
 const ALERTAS = {
   sequia: {
     nombre: "Sequía",
-    color: "#c2410c",
+    colores: { vigilancia: "#f59e0b", alerta: "#dc2626" },   // ámbar y rojo
     texto: {
       vigilancia: "vigor y humedad por debajo de lo normal para esta época",
       alerta: "vigor y humedad muy por debajo de lo normal para esta época",
@@ -46,7 +46,7 @@ const ALERTAS = {
   },
   exceso: {
     nombre: "Exceso hídrico",
-    color: "#2563eb",
+    colores: { vigilancia: "#38bdf8", alerta: "#1d4ed8" },   // celeste y azul
     texto: {
       vigilancia: "más agua en superficie que lo normal para esta época",
       alerta: "mucha más agua en superficie que lo normal para esta época",
@@ -55,7 +55,7 @@ const ALERTAS = {
 };
 
 const COLOR_NORMAL = "#9ca3af";
-const RELLENO = { normal: 0.12, vigilancia: 0.35, alerta: 0.65 };   // opacidad del partido en la pestaña Alertas
+const RELLENO = { normal: 0.15, vigilancia: 0.55, alerta: 0.6 };    // opacidad del partido en la pestaña Alertas
 
 // Enlaces para compartir: /monitor/#agua abre directo en esa capa
 const ANCLAS = { vigor: "ndvi", agua: "mndwi", humedad: "ndmi", alertas: "alertas" };
@@ -123,13 +123,15 @@ function leyenda(cfg) {
     <div class="extremos"><span>${cfg.extremos[0]} (${fmtIndice(cfg.rango[0])})</span><span>${cfg.extremos[1]} (${fmtIndice(cfg.rango[1])})</span></div>`;
 }
 
+// Una columna por alerta (sequía, exceso) con vigilancia y alerta; abajo, normal y sin dato
 function leyendaAlertas() {
-  const cuadro = (color, nivel, texto) =>
-    `<span><i style="background:${color}; opacity:${Math.max(RELLENO[nivel] * 1.3, 0.3)}"></i>${texto}</span>`;
-  return `<div class="items">${cuadro(COLOR_NORMAL, "normal", "Normal")}` +
-    Object.values(ALERTAS).map((a) =>
-      cuadro(a.color, "vigilancia", `${a.nombre}: vigilancia`) + cuadro(a.color, "alerta", `${a.nombre}: alerta`)).join("") +
-    `<span><i class="vacio"></i>Sin dato (nubes)</span></div>`;
+  const cuadro = (color, texto) => `<span><i style="background:${color}"></i>${texto}</span>`;
+  const tipos = Object.values(ALERTAS);
+  return `<div class="items">` +
+    tipos.map((a) => `<b>${a.nombre}</b>`).join("") +
+    tipos.map((a) => cuadro(a.colores.vigilancia, "Vigilancia")).join("") +
+    tipos.map((a) => cuadro(a.colores.alerta, "Alerta")).join("") +
+    `${cuadro(COLOR_NORMAL, "Normal")}<span><i class="vacio"></i>Sin dato (nubes)</span></div>`;
 }
 
 // --- Capa de teselas desde un COG en EPSG:3857 -----------------------------------
@@ -252,7 +254,7 @@ async function iniciar() {
     const sel = f.properties.nombre === partidoSel;
     const base = { color: sel ? "#15803d" : "#1f2937", weight: sel ? 3 : 1.2, fill: true, fillOpacity: 0, interactive: true };
     const a = indiceSel === "alertas" ? alertaDe(f.properties.nombre) : null;
-    return a ? { ...base, fillColor: a.cfg?.color ?? COLOR_NORMAL, fillOpacity: RELLENO[a.nivel] } : base;
+    return a ? { ...base, fillColor: a.cfg?.colores[a.nivel] ?? COLOR_NORMAL, fillOpacity: RELLENO[a.nivel] } : base;
   };
   const capaPartidos = L.geoJSON(partidos, {
     style: estilo,
@@ -348,7 +350,7 @@ async function iniciar() {
       for (const [ind, cfg] of Object.entries(ALERTAS)) {
         for (const p of nombres) {
           if (nivelDe(ind, p) === nivel) {
-            items.push(`<li style="--color: ${cfg.color}" class="${nivel}"><b>${p}</b>: ${cfg.texto[nivel]} ` +
+            items.push(`<li style="--color: ${cfg.colores[nivel]}" class="${nivel}"><b>${p}</b>: ${cfg.texto[nivel]} ` +
               `<span class="nivel">${nivel}</span></li>`);
           }
         }
