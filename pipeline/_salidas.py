@@ -3,10 +3,12 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
+import rasterio  # noqa: E402
 import rioxarray  # noqa: E402,F401  (registra el accessor .rio)
 from matplotlib.colors import LinearSegmentedColormap  # noqa: E402
 from rasterio.enums import Resampling  # noqa: E402
 from rasterio.features import rasterize  # noqa: E402
+from rasterio.warp import reproject  # noqa: E402
 
 import config  # noqa: E402
 
@@ -23,14 +25,28 @@ def etiquetas(partidos_calculo, geobox):
     return rasterize(formas, out_shape=geobox.shape, transform=geobox.affine, fill=0, dtype="int16")
 
 
-def estadisticas(mediana, n_obs, etiq, nombres):
+def agua_habitual(geobox):
+    """True donde hay laguna habitual (ver 03_agua_habitual.py), en la grilla de cálculo."""
+    fraccion = np.zeros(geobox.shape, dtype="float32")
+    with rasterio.open(config.AGUA_HABITUAL_TIF) as src:
+        reproject(rasterio.band(src, 1), fraccion, dst_transform=geobox.affine, dst_crs=str(geobox.crs),
+                  resampling=Resampling.average)
+    return fraccion >= 0.5
+
+
+def estadisticas(mediana, n_obs, etiq, nombres, habitual):
     """Cifras por partido y fracción de la zona con dato.
 
-    Por partido: valido_pct siempre; agua_km2 (MNDWI > umbral) y la media de los
-    demás índices solo si el partido tiene al menos MIN_VALIDO_PARTIDO con dato.
+    Por partido: valido_pct siempre; y solo si el partido tiene al menos MIN_VALIDO_PARTIDO
+    con dato, agua_km2 (MNDWI > umbral), agua_transitoria_km2 (la que está fuera de las
+    lagunas habituales: campos anegados) y la media de los demás índices sobre tierra
+    firme, sin el agua de la quincena ni las lagunas habituales (que si no tiran el
+    promedio para abajo cuando crecen).
     """
     area_px = config.RESOLUCION_M ** 2
     con_dato = n_obs > 0
+    with np.errstate(invalid="ignore"):
+        agua = mediana["mndwi"] > config.UMBRAL_MNDWI
     filas = {}
     for i, nombre in enumerate(nombres, 1):
         en = etiq == i
@@ -38,12 +54,15 @@ def estadisticas(mediana, n_obs, etiq, nombres):
         frac = util.sum() / max(en.sum(), 1)
         fila = {"valido_pct": int(round(100 * frac))}
         alcanza = frac >= config.MIN_VALIDO_PARTIDO
+        tierra = util & ~agua & ~habitual
         for indice, valores in mediana.items():
             if indice == "mndwi":
-                agua = (valores[util] > config.UMBRAL_MNDWI).sum() * area_px / 1e6
-                fila["agua_km2"] = round(float(agua), 1) if alcanza else None
+                total = (util & agua).sum() * area_px / 1e6
+                transitoria = (util & agua & ~habitual).sum() * area_px / 1e6
+                fila["agua_km2"] = round(float(total), 1) if alcanza else None
+                fila["agua_transitoria_km2"] = round(float(transitoria), 1) if alcanza else None
             else:
-                fila[indice] = round(float(np.nanmean(valores[util])), 3) if alcanza else None
+                fila[indice] = round(float(np.nanmean(valores[tierra])), 3) if alcanza and tierra.any() else None
         filas[nombre] = fila
     zona = etiq > 0
     valido_zona = float((zona & con_dato).sum() / max(zona.sum(), 1))

@@ -36,7 +36,7 @@ def quincenas_del_anio(anio, hasta=None):
 
 # --- serie.json: cifras por partido, arrays alineados con "quincenas" -------------
 
-VARIABLES = ["agua_km2" if i == "mndwi" else i for i in config.INDICES] + ["valido_pct"]
+VARIABLES = ["agua_km2" if i == "mndwi" else i for i in config.INDICES] + ["agua_transitoria_km2", "valido_pct"]
 
 
 def _leer(ruta, vacio):

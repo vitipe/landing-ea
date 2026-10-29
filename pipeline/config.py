@@ -9,6 +9,13 @@ PARTIDOS_GEOJSON = MONITOR_DATA / "partidos.geojson"   # IGN (ign:departamento),
 SERIE_JSON = MONITOR_DATA / "serie.json"               # cifras por partido y quincena (se commitea)
 QUINCENAS_JSON = MONITOR_DATA / "quincenas.json"       # quincenas publicadas y sus rásters (se commitea)
 ALERTAS_JSON = MONITOR_DATA / "alertas.json"           # nivel de alerta por quincena y partido (se commitea)
+AGUA_HABITUAL_TIF = RAIZ / "pipeline" / "datos" / "agua_habitual.tif"  # lagunas habituales (03_agua_habitual.py)
+
+# --- Lagunas habituales: JRC Global Surface Water 1984-2024 (Copernicus, uso sin restricciones
+# citando a Pekel et al. 2016). Separa el agua de las lagunas del agua en los campos.
+JRC_OCURRENCIA_URL = ("https://storage.googleapis.com/water-world/download2024/VER1-5/occurrence/"
+                      "occurrence_70W_30S_v1_5_2024.tif")
+OCURRENCIA_HABITUAL = 50         # % de las observaciones 1984-2024 con agua: laguna habitual (como guamini-agua)
 SALIDA = RAIZ / "salida"         # COG e imagen OG; en CI se suben al release, nunca a git
 RELEASE = "monitor-datos"        # release de GitHub donde viven los rásters publicados
 
@@ -50,8 +57,10 @@ ALTO_OG = 630
 # Calibrado con la serie 2017-2026: detecta la sequía de mar-ago 2023 en ~70% de los
 # partidos-quincena y deja ~6% en alerta fuera de ella (incluye eventos reales como 2019 y 2025)
 ALERTA_ANIOS_MIN = 5             # años de referencia con dato para calcular el nivel
-ALERTA_DESVIO_MIN = {"ndvi": 0.02, "ndmi": 0.02, "agua_km2": 0.05}  # piso del desvío (agua: en log1p)
+ALERTA_VALIDO_MIN = 70          # % del partido sin nubes para calcular el nivel (más exigente que las cifras)
+ALERTA_DESVIO_MIN = {"ndvi": 0.02, "ndmi": 0.02, "agua_transitoria_km2": 0.5}  # piso del desvío (agua: en log1p)
 SEQUIA_Z_VIGILANCIA = -1.25      # promedio de z(NDVI) y z(NDMI)
 SEQUIA_Z_ALERTA = -2.0
-EXCESO_Z_VIGILANCIA = 1.25       # z de log1p(agua_km2): el agua tiene años de crecidas enormes
+EXCESO_Z_VIGILANCIA = 1.25       # z de log1p(agua_transitoria_km2): agua fuera de las lagunas habituales
 EXCESO_Z_ALERTA = 2.0
+EXCESO_MIN_KM2 = 5               # menos agua fuera de lagunas que esto no alerta, aunque el z sea alto

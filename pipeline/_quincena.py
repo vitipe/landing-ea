@@ -47,7 +47,8 @@ def procesar(desde, hasta, partidos, rasters=True):
     calculo = partidos.to_crs(config.CRS_CALCULO)
     etiq = _salidas.etiquetas(calculo, geobox)
     valores = {k: mediana[k].values for k in mediana.data_vars}
-    filas, valido_zona = _salidas.estadisticas(valores, n_obs.values, etiq, list(partidos["nombre"]))
+    filas, valido_zona = _salidas.estadisticas(valores, n_obs.values, etiq, list(partidos["nombre"]),
+                                               _salidas.agua_habitual(geobox))
 
     entrada["escenas"] = sorted({str(t)[:10] for t, n in zip(aporte.time.values, aporte.values) if n > 0})
     entrada["valido_pct"] = int(round(100 * valido_zona))

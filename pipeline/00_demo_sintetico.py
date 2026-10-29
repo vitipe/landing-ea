@@ -82,6 +82,7 @@ for anio in range(2017, hoy.year + 1):
                 "ndvi": round(ndvi, 3) if ok else None,
                 "ndmi": round(ndvi * 0.6 - 0.12 + 0.1 * (h - 0.45), 3) if ok else None,
                 "agua_km2": round(40 + 260 * h ** 2 + rng.normal(0, 8), 1) if ok else None,
+                "agua_transitoria_km2": round(max(0, 120 * (h - 0.5)) + abs(rng.normal(0, 2)), 1) if ok else None,
                 "valido_pct": valido,
             }
 _datos.escribir_serie(filas, nombres, demo=True)

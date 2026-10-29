@@ -3,7 +3,9 @@
 Cada valor se compara con la misma quincena de los demás años del registro (dejando
 afuera el año evaluado: el registro es corto) y se expresa en desvíos (z):
     sequía: promedio de z(NDVI) y z(NDMI); negativo = más seco que lo normal
-    exceso: z de log1p(agua_km2); positivo = más agua que lo normal
+    exceso: z de log1p(agua_transitoria_km2), el agua fuera de las lagunas habituales
+            (campos anegados, lagunas desbordadas); positivo = más agua que lo normal
+Solo cuentan los partidos con al menos ALERTA_VALIDO_MIN % sin nubes.
 Niveles: vigilancia y alerta según los umbrales de config.py. Una vigilancia que se
 repite en la quincena anterior con dato (hasta un mes antes) sube a alerta, para no
 alarmar por una sola imagen rara.
@@ -30,10 +32,11 @@ def _posicion(q):
 
 
 def _valor(fila, variable):
-    v = (fila or {}).get(variable)
-    if v is None:
+    fila = fila or {}
+    v = fila.get(variable)
+    if v is None or (fila.get("valido_pct") or 0) < config.ALERTA_VALIDO_MIN:
         return None
-    return math.log1p(v) if variable == "agua_km2" else v
+    return math.log1p(v) if variable == "agua_transitoria_km2" else v
 
 
 def _z(serie, q, partido, variable):
@@ -69,12 +72,16 @@ def calcular(serie, nombres):
                 "exceso": (config.EXCESO_Z_VIGILANCIA, config.EXCESO_Z_ALERTA)}
     salida = {ind: {} for ind in umbrales}
     for p in nombres:
-        z = {"exceso": [_z(serie, q, p, "agua_km2") for q in qs]}
+        z = {"exceso": [_z(serie, q, p, "agua_transitoria_km2") for q in qs]}
+        transitoria = [(serie[q].get(p) or {}).get("agua_transitoria_km2") or 0 for q in qs]
         zn = [_z(serie, q, p, "ndvi") for q in qs]
         zm = [_z(serie, q, p, "ndmi") for q in qs]
         z["sequia"] = [None if a is None or b is None else (a + b) / 2 for a, b in zip(zn, zm)]
         for ind, (vig, ale) in umbrales.items():
             niveles = [_nivel(v, vig, ale) for v in z[ind]]
+            if ind == "exceso":   # unos pocos km² sobre casi nada dan z enormes: no es exceso
+                niveles = [n if n in (None, "normal") or km2 >= config.EXCESO_MIN_KM2 else "normal"
+                           for n, km2 in zip(niveles, transitoria)]
             final, previo = [], None      # previo: (orden, nivel sin la regla de repetición)
             for q, nivel in zip(qs, niveles):
                 if nivel is None:

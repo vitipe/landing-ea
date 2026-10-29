@@ -19,7 +19,8 @@ const INDICES = {
     nombre: "Agua en superficie (MNDWI)",
     variable: "agua_km2",
     explica:
-      "Lagunas, bajos y campos anegados: se marca en azul donde el MNDWI supera 0. El agua debajo de un cultivo o de un pastizal puede no verse.",
+      "Lagunas, bajos y campos anegados: se marca en azul donde el MNDWI supera 0. El agua debajo de un cultivo o de un pastizal puede no verse. " +
+      "En las cifras, el agua fuera de lagunas es la que está fuera de las lagunas habituales (JRC 1984–2024).",
     umbral: 0,
     color: "#1d4e89",
   },
@@ -48,8 +49,8 @@ const ALERTAS = {
     nombre: "Exceso hídrico",
     colores: { vigilancia: "#38bdf8", alerta: "#1d4ed8" },   // celeste y azul
     texto: {
-      vigilancia: "más agua en superficie que lo normal para esta época",
-      alerta: "mucha más agua en superficie que lo normal para esta época",
+      vigilancia: "más agua fuera de las lagunas habituales que lo normal para esta época (campos anegados)",
+      alerta: "mucha más agua fuera de las lagunas habituales que lo normal para esta época (campos anegados)",
     },
   },
 };
@@ -368,6 +369,7 @@ async function iniciar() {
     $("cifras").innerHTML =
       fila("Vigor medio (NDVI)", dato("ndvi"), fmtIndice) +
       fila("Agua en superficie", dato("agua_km2"), fmtKm2) +
+      fila("Agua fuera de lagunas", dato("agua_transitoria_km2"), fmtKm2) +
       fila("Humedad media (NDMI)", dato("ndmi"), fmtIndice) +
       fila("Superficie sin nubes", dato("valido_pct"), (v) => `${v}%`) +
       (alertas ? Object.entries(ALERTAS).map(([ind, a]) => fila(a.nombre, nivelDe(ind, partidoSel), (v) => v)).join("") : "");
