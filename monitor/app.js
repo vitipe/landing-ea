@@ -273,6 +273,7 @@ async function iniciar() {
   let capaIndice = null;
   let tiffSel = null;
 
+  Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;   // la del panel (style.css)
   const grafico = new Chart($("grafico"), {
     type: "line",
     data: {
