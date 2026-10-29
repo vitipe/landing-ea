@@ -13,6 +13,7 @@ import argparse
 from datetime import date
 from pathlib import Path
 
+import _alertas
 import _datos
 import _quincena
 import config
@@ -46,6 +47,7 @@ if args.unir:
         serie.update(nuevas | mejores)
         print(f"{ruta.name}: {len(nuevas)} quincenas nuevas, {len(mejores)} mejoradas")
     _datos.escribir_serie(serie, nombres)
+    _alertas.escribir(serie, nombres)
     raise SystemExit
 
 if not args.anio:

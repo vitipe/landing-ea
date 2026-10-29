@@ -34,8 +34,31 @@ const INDICES = {
   },
 };
 
+// Alerta temprana: niveles por quincena y partido de data/alertas.json (pipeline/_alertas.py)
+const ALERTAS = {
+  sequia: {
+    nombre: "Sequía",
+    color: "#c2410c",
+    texto: {
+      vigilancia: "vigor y humedad por debajo de lo normal para esta época",
+      alerta: "vigor y humedad muy por debajo de lo normal para esta época",
+    },
+  },
+  exceso: {
+    nombre: "Exceso hídrico",
+    color: "#2563eb",
+    texto: {
+      vigilancia: "más agua en superficie que lo normal para esta época",
+      alerta: "mucha más agua en superficie que lo normal para esta época",
+    },
+  },
+};
+
+const COLOR_NORMAL = "#9ca3af";
+const RELLENO = { normal: 0.12, vigilancia: 0.35, alerta: 0.65 };   // opacidad del partido en la pestaña Alertas
+
 // Enlaces para compartir: /monitor/#agua abre directo en esa capa
-const ANCLAS = { vigor: "ndvi", agua: "mndwi", humedad: "ndmi" };
+const ANCLAS = { vigor: "ndvi", agua: "mndwi", humedad: "ndmi", alertas: "alertas" };
 
 const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto",
   "septiembre", "octubre", "noviembre", "diciembre"];
@@ -98,6 +121,15 @@ function leyenda(cfg) {
   const paradas = cfg.paleta.map((c, i) => `${c} ${(100 * i) / (cfg.paleta.length - 1)}%`).join(", ");
   return `<div class="barra" style="background:linear-gradient(to right, ${paradas})"></div>
     <div class="extremos"><span>${cfg.extremos[0]} (${fmtIndice(cfg.rango[0])})</span><span>${cfg.extremos[1]} (${fmtIndice(cfg.rango[1])})</span></div>`;
+}
+
+function leyendaAlertas() {
+  const cuadro = (color, nivel, texto) =>
+    `<span><i style="background:${color}; opacity:${Math.max(RELLENO[nivel] * 1.3, 0.3)}"></i>${texto}</span>`;
+  return `<div class="items">${cuadro(COLOR_NORMAL, "normal", "Normal")}` +
+    Object.values(ALERTAS).map((a) =>
+      cuadro(a.color, "vigilancia", `${a.nombre}: vigilancia`) + cuadro(a.color, "alerta", `${a.nombre}: alerta`)).join("") +
+    `<span><i class="vacio"></i>Sin dato (nubes)</span></div>`;
 }
 
 // --- Capa de teselas desde un COG en EPSG:3857 -----------------------------------
@@ -169,10 +201,11 @@ async function valorEn(tiff, latlng) {
 // --- Página ---------------------------------------------------------------------
 
 async function iniciar() {
-  const [quincenas, serie, partidos] = await Promise.all([
+  const [quincenas, serie, partidos, alertas] = await Promise.all([
     cargar("quincenas.json"), cargar("serie.json"), cargar("partidos.geojson"),
+    cargar("alertas.json").catch(() => null),   // opcional: sin alertas la página anda igual
   ]);
-  $("aviso-demo").hidden = !(quincenas.demo || serie.demo);
+  $("aviso-demo").hidden = !(quincenas.demo || serie.demo || alertas?.demo);
 
   const mapa = L.map("mapa", { zoomControl: true });
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -190,14 +223,37 @@ async function iniciar() {
   }
   $("actualizado").textContent = textoActualizado(quincenas.actualizado);
 
-  // Partidos
+  let indiceSel = ANCLAS[location.hash.slice(1)] ?? "ndvi";
+  if (indiceSel === "alertas" && !alertas) indiceSel = "ndvi";
+  let indiceGrafico = indiceSel === "alertas" ? "ndvi" : indiceSel;   // en la pestaña Alertas, el último índice
+  let quincenaSel = publicadas[0]?.id;
+
+  // Alertas de la quincena elegida (o de la última con cifras, si no hay rásters)
+  const quincenaAlertas = () => quincenaSel ?? serie.quincenas.at(-1);
+  const nivelDe = (ind, partido) => {
+    const i = alertas ? alertas.quincenas.indexOf(quincenaAlertas()) : -1;
+    return i >= 0 ? alertas[`${ind}_nivel`]?.[partido]?.[i] ?? null : null;
+  };
+  // El nivel más alto del partido ({nivel, cfg}; cfg null si es normal), o null sin dato
+  const alertaDe = (partido) => {
+    let peor = null;
+    for (const [ind, cfg] of Object.entries(ALERTAS)) {
+      const nivel = nivelDe(ind, partido);
+      if (nivel === "alerta" || (nivel === "vigilancia" && peor?.nivel !== "alerta")) peor = { nivel, cfg };
+      else if (nivel === "normal" && !peor) peor = { nivel, cfg: null };
+    }
+    return peor;
+  };
+
+  // Partidos: en la pestaña Alertas se pintan según el nivel (sin capa del satélite)
   const nombres = serie.partidos;
   let partidoSel = nombres.includes("Guaminí") ? "Guaminí" : nombres[0];
-  const estilo = (f) => ({
-    color: f.properties.nombre === partidoSel ? "#15803d" : "#1f2937",
-    weight: f.properties.nombre === partidoSel ? 3 : 1.2,
-    fill: true, fillOpacity: 0, interactive: true,
-  });
+  const estilo = (f) => {
+    const sel = f.properties.nombre === partidoSel;
+    const base = { color: sel ? "#15803d" : "#1f2937", weight: sel ? 3 : 1.2, fill: true, fillOpacity: 0, interactive: true };
+    const a = indiceSel === "alertas" ? alertaDe(f.properties.nombre) : null;
+    return a ? { ...base, fillColor: a.cfg?.color ?? COLOR_NORMAL, fillOpacity: RELLENO[a.nivel] } : base;
+  };
   const capaPartidos = L.geoJSON(partidos, {
     style: estilo,
     onEachFeature: (f, capa) => {
@@ -214,8 +270,6 @@ async function iniciar() {
   // Quincenas con rásters
   $("quincena").innerHTML = publicadas
     .map((q) => `<option value="${q.id}">${nombreQuincena(q.id)}</option>`).join("");
-  let indiceSel = ANCLAS[location.hash.slice(1)] ?? "ndvi";
-  let quincenaSel = publicadas[0]?.id;
   let capaIndice = null;
   let tiffSel = null;
 
@@ -236,18 +290,29 @@ async function iniciar() {
   });
 
   async function mostrarIndice() {
-    const cfg = INDICES[indiceSel];
     document.querySelectorAll(".indices button").forEach((b) => {
       b.setAttribute("aria-pressed", b.dataset.indice === indiceSel);
     });
-    $("explica").textContent = cfg.explica;
-    $("leyenda").innerHTML = leyenda(cfg);
     if (capaIndice) mapa.removeLayer(capaIndice);
     capaIndice = null;
+    tiffSel = null;
+    capaPartidos.setStyle(estilo);
     const q = publicadas.find((x) => x.id === quincenaSel);
+    if (q) {
+      $("fechas").textContent = textoFechas(q);
+      $("anio-copernicus").textContent = q.id.slice(0, 4);
+    }
+    if (indiceSel === "alertas") {
+      $("explica").textContent = "Partidos más secos o más anegados que lo normal para esta época, " +
+        "comparados con la misma quincena de los demás años. Tocá un partido para ver sus cifras.";
+      $("leyenda").innerHTML = leyendaAlertas();
+      mostrarPartido();
+      return;
+    }
+    const cfg = INDICES[indiceSel];
+    $("explica").textContent = cfg.explica;
+    $("leyenda").innerHTML = leyenda(cfg);
     if (!q) return;
-    $("fechas").textContent = textoFechas(q);
-    $("anio-copernicus").textContent = q.id.slice(0, 4);
     try {
       tiffSel = await abrirTiff(`data/${q.archivos[indiceSel]}`);
       capaIndice = new CapaCog(tiffSel, tablaDeColores(cfg), {
@@ -269,6 +334,30 @@ async function iniciar() {
     mostrarPartido();
   }
 
+  function mostrarAlertas() {
+    capaPartidos.setStyle(estilo);
+    if (!alertas) return;
+    $("seccion-alertas").hidden = false;
+    document.querySelector('.indices button[data-indice="alertas"]').hidden = false;
+    $("anios-alertas").textContent = `${alertas.anios[0]} a ${alertas.anios[1]}`;
+    const q = quincenaAlertas();
+    $("titulo-alertas").textContent = q ? `Alertas: ${nombreQuincena(q)}` : "Alertas";
+    const items = [];
+    for (const nivel of ["alerta", "vigilancia"]) {
+      for (const [ind, cfg] of Object.entries(ALERTAS)) {
+        for (const p of nombres) {
+          if (nivelDe(ind, p) === nivel) {
+            items.push(`<li style="--color: ${cfg.color}" class="${nivel}"><b>${p}</b>: ${cfg.texto[nivel]} ` +
+              `<span class="nivel">${nivel}</span></li>`);
+          }
+        }
+      }
+    }
+    $("lista-alertas").innerHTML = items.length
+      ? items.join("")
+      : `<li class="normal">Sin alertas: todos los partidos con dato están dentro de lo normal.</li>`;
+  }
+
   function mostrarPartido() {
     const i = serie.quincenas.indexOf(quincenaSel);
     const dato = (v) => (i >= 0 ? serie[v]?.[partidoSel]?.[i] : null);
@@ -277,9 +366,10 @@ async function iniciar() {
       fila("Vigor medio (NDVI)", dato("ndvi"), fmtIndice) +
       fila("Agua en superficie", dato("agua_km2"), fmtKm2) +
       fila("Humedad media (NDMI)", dato("ndmi"), fmtIndice) +
-      fila("Superficie sin nubes", dato("valido_pct"), (v) => `${v}%`);
+      fila("Superficie sin nubes", dato("valido_pct"), (v) => `${v}%`) +
+      (alertas ? Object.entries(ALERTAS).map(([ind, a]) => fila(a.nombre, nivelDe(ind, partidoSel), (v) => v)).join("") : "");
 
-    const cfg = INDICES[indiceSel];
+    const cfg = INDICES[indiceGrafico];
     $("titulo-grafico").textContent = `${cfg.nombre}: ${partidoSel}`;
     const porAnio = {};
     serie.quincenas.forEach((q, k) => {
@@ -319,6 +409,7 @@ async function iniciar() {
   document.querySelectorAll(".indices button").forEach((b) => {
     b.addEventListener("click", () => {
       indiceSel = b.dataset.indice;
+      if (indiceSel !== "alertas") indiceGrafico = indiceSel;
       const ancla = Object.keys(ANCLAS).find((k) => ANCLAS[k] === indiceSel);
       history.replaceState(null, "", `#${ancla}`);
       mostrarIndice();
@@ -326,6 +417,7 @@ async function iniciar() {
   });
   $("quincena").addEventListener("change", () => {
     quincenaSel = $("quincena").value;
+    mostrarAlertas();
     mostrarIndice();
   });
   $("opacidad").addEventListener("input", () => capaIndice?.setOpacity(1 - $("opacidad").value / 100));
@@ -345,6 +437,7 @@ async function iniciar() {
   });
 
   $("seccion-partido").hidden = false;
+  mostrarAlertas();
   if (publicadas.length) {
     $("controles").hidden = false;
     await mostrarIndice();

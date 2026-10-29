@@ -60,7 +60,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add monitor/data/serie.json monitor/data/quincenas.json
+          git add monitor/data/serie.json monitor/data/quincenas.json monitor/data/alertas.json
           if ! git diff --cached --quiet; then
             git commit -m "Monitor: $(python3 -c "import json; print(json.load(open('monitor/data/quincenas.json'))['quincenas'][0]['id'])")"
             git push

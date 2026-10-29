@@ -8,6 +8,7 @@ MONITOR_DATA = RAIZ / "monitor" / "data"
 PARTIDOS_GEOJSON = MONITOR_DATA / "partidos.geojson"   # IGN (ign:departamento), ver CLAUDE.md
 SERIE_JSON = MONITOR_DATA / "serie.json"               # cifras por partido y quincena (se commitea)
 QUINCENAS_JSON = MONITOR_DATA / "quincenas.json"       # quincenas publicadas y sus rásters (se commitea)
+ALERTAS_JSON = MONITOR_DATA / "alertas.json"           # nivel de alerta por quincena y partido (se commitea)
 SALIDA = RAIZ / "salida"         # COG e imagen OG; en CI se suben al release, nunca a git
 RELEASE = "monitor-datos"        # release de GitHub donde viven los rásters publicados
 
@@ -43,3 +44,14 @@ MIN_VALIDO_PARTIDO = 0.5         # fracción del partido con dato para mostrar s
 QUINCENAS_PUBLICADAS = 4         # cuántas quincenas con rásters quedan en el sitio (límite de Pages: 1 GB)
 ANCHO_OG = 1200                  # imagen para la vista previa de WhatsApp y redes
 ALTO_OG = 630
+
+# --- Alertas (ver _alertas.py) -------------------------------------------------
+# z = desvíos respecto de la misma quincena en los demás años del registro.
+# Calibrado con la serie 2017-2026: detecta la sequía de mar-ago 2023 en ~70% de los
+# partidos-quincena y deja ~6% en alerta fuera de ella (incluye eventos reales como 2019 y 2025)
+ALERTA_ANIOS_MIN = 5             # años de referencia con dato para calcular el nivel
+ALERTA_DESVIO_MIN = {"ndvi": 0.02, "ndmi": 0.02, "agua_km2": 0.05}  # piso del desvío (agua: en log1p)
+SEQUIA_Z_VIGILANCIA = -1.25      # promedio de z(NDVI) y z(NDMI)
+SEQUIA_Z_ALERTA = -2.0
+EXCESO_Z_VIGILANCIA = 1.25       # z de log1p(agua_km2): el agua tiene años de crecidas enormes
+EXCESO_Z_ALERTA = 2.0

@@ -15,6 +15,7 @@ import pyproj
 from odc.geo.geobox import GeoBox
 from odc.geo.xr import xr_zeros
 
+import _alertas
 import _datos
 import _quincena
 import _salidas
@@ -84,6 +85,7 @@ for anio in range(2017, hoy.year + 1):
                 "valido_pct": valido,
             }
 _datos.escribir_serie(filas, nombres, demo=True)
+_alertas.escribir(filas, nombres, demo=True)
 
 # --- Rásters: las últimas cuatro quincenas publicadas y una nublada más nueva -------
 config.QUINCENAS_JSON.unlink(missing_ok=True)
