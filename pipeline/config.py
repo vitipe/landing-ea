@@ -54,8 +54,9 @@ ALTO_OG = 630
 
 # --- Alertas (ver _alertas.py) -------------------------------------------------
 # z = desvíos respecto de la misma quincena en los demás años del registro.
-# Calibrado con la serie 2017-2026: detecta la sequía de mar-ago 2023 en ~70% de los
-# partidos-quincena y deja ~6% en alerta fuera de ella (incluye eventos reales como 2019 y 2025)
+# Calibrado con la serie 2017-2026 (NDVI/NDMI de tierra firme, exceso = agua fuera de lagunas):
+# la sequía de mar-ago 2023 sale en ~72% de los partidos-quincena y queda ~6% en alerta fuera de
+# ella (incluye 2019); exceso: ~5% en alerta, 0% durante la sequía de 2023, ~35% a fines de 2025
 ALERTA_ANIOS_MIN = 5             # años de referencia con dato para calcular el nivel
 ALERTA_VALIDO_MIN = 70          # % del partido sin nubes para calcular el nivel (más exigente que las cifras)
 ALERTA_DESVIO_MIN = {"ndvi": 0.02, "ndmi": 0.02, "agua_transitoria_km2": 0.5}  # piso del desvío (agua: en log1p)
