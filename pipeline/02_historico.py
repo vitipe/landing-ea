@@ -21,6 +21,8 @@ p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDes
 p.add_argument("--anio", type=int)
 p.add_argument("--salida", type=Path, help="serie parcial (por defecto, monitor/data/serie.json)")
 p.add_argument("--unir", type=Path, nargs="+", help="series parciales para sumar a serie.json")
+p.add_argument("--pisar", action="store_true",
+               help="con --unir, reemplaza las quincenas que ya estaban (después de corregir el cálculo)")
 args = p.parse_args()
 
 partidos = _quincena.leer_partidos()
@@ -37,10 +39,10 @@ if args.unir:
     for ruta in args.unir:
         parcial = _datos.leer_serie(ruta)
         # Una quincena que ya estaba solo se pisa si el cálculo nuevo tiene más dato
-        # (por ejemplo, al sumar escenas de COLECCION_RESPALDO)
+        # (por ejemplo, al sumar escenas de COLECCION_RESPALDO), o con --pisar
         nuevas = {q: f for q, f in parcial.items() if q not in serie}
         mejores = {q: f for q, f in parcial.items()
-                   if q in serie and valido_medio(f) > valido_medio(serie[q])}
+                   if q in serie and (args.pisar or valido_medio(f) > valido_medio(serie[q]))}
         serie.update(nuevas | mejores)
         print(f"{ruta.name}: {len(nuevas)} quincenas nuevas, {len(mejores)} mejoradas")
     _datos.escribir_serie(serie, nombres)

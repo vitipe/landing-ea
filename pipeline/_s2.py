@@ -77,6 +77,11 @@ def buscar(desde, hasta, zona):
 def _escala(item, banda):
     meta = item.assets[banda].extra_fields
     rb = (meta.get("raster:bands") or meta.get("bands") or [{}])[0]
+    # En COLECCION_RESPALDO, earthsearch:boa_offset_applied indica que el offset de BOA ya
+    # se restó a los valores (dan 1000 menos que la misma toma en COLECCION), pero
+    # raster:bands sigue diciendo -0.1: restarlo de nuevo infla el NDVI y borra el agua
+    if item.properties.get("earthsearch:boa_offset_applied"):
+        return rb.get("scale", 1.0), 0.0
     return rb.get("scale", 1.0), rb.get("offset", 0.0)
 
 

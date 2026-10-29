@@ -12,6 +12,10 @@ on:
       hasta:
         description: "Último año"
         default: "2026"
+      pisar:
+        description: "Reemplazar las quincenas que ya están (después de corregir el cálculo)"
+        type: boolean
+        default: false
 
 concurrency:
   group: monitor
@@ -79,7 +83,7 @@ jobs:
           pattern: serie-*
           path: salida
           merge-multiple: true
-      - run: python pipeline/02_historico.py --unir salida/serie_*.json
+      - run: python pipeline/02_historico.py --unir salida/serie_*.json ${{ inputs.pisar && '--pisar' || '' }}
       - run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
