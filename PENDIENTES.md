@@ -1,6 +1,6 @@
 # Pendientes del sitio NODOAGRO
 
-Última actualización: 23 de octubre de 2026
+Última actualización: 29 de octubre de 2026
 
 ## 1. Verificar ya (5 minutos)
 
@@ -35,12 +35,14 @@
 
 ## 4. Monitor satelital (`/monitor/`)
 
-- [ ] **Activar la publicación por Actions:** en GitHub, repo `landing-ea` → Settings → Pages → Source: **GitHub Actions**. Después del primer deploy, confirmar que el dominio `www.nodoagro.com.ar` siga cargado ahí.
-- [ ] **Primera corrida:** Actions → *Monitor satelital* → *Run workflow*. Puede tardar hasta media hora y publica la última quincena cerrada.
-- [ ] **Histórico (una vez):** Actions → *Histórico del monitor* → *Run workflow* (2017 a hoy). Corre un año por job y tarda unas horas; después el gráfico compara cada quincena con años anteriores.
-- [ ] **Revisar la primera quincena real:** que las lagunas conocidas (Del Monte, Cochicó, Alsina, Epecuén) aparezcan como agua y que las sombras de nubes no.
-- [ ] **Compartir el enlace** `https://www.nodoagro.com.ar/monitor/` en grupos de WhatsApp: la vista previa muestra el mapa de la última quincena.
+- [x] **Publicación por Actions** activada (Settings → Pages → Source: GitHub Actions), con el dominio `www.nodoagro.com.ar` (28/10/2026).
+- [x] **Primera corrida:** la 1.ª quincena de octubre vino nublada; se publicó la 2.ª de septiembre de 2026.
+- [x] **Histórico 2017–2026** cargado (224 quincenas). 2018 queda parcial: parte de sus imágenes está en un bucket pago de AWS.
+- [x] **Primera quincena revisada:** las Encadenadas (Del Monte, Cochicó, Alsina, Del Venado, Epecuén) aparecen como agua y no hay sombras de nubes.
+- [x] **Alertas de sequía y exceso hídrico** por partido, en el panel y en la pestaña *Alertas* (29/10/2026).
+- [ ] **Compartir el enlace** `https://www.nodoagro.com.ar/monitor/` en grupos de WhatsApp: la vista previa muestra el mapa de la última quincena. Para abrir directo en las alertas: `https://www.nodoagro.com.ar/monitor/#alertas`.
 - Si una quincena viene nublada, el monitor lo avisa y muestra la anterior: no hay que hacer nada.
+- Si hay que recalcular el histórico (por ejemplo, después de corregir el cálculo): Actions → *Histórico del monitor* → *Run workflow* con "Reemplazar las quincenas que ya están" tildado.
 
 ## 5. Medición (opcional)
 
