@@ -25,7 +25,7 @@ This repository contains a single-page landing site for NODOAGRO, a consultancy 
 
 - `index.html` – main landing page markup
 - `src/input.css` – Tailwind entry point and custom CSS
-- `css/styles.css` – compiled CSS (generated, but committed because GitHub Pages has no build step)
+- `css/styles.css` – compiled CSS (generated, not in git: `publicar.yml` builds it)
 - `images/` – image assets used in the site
 - `monitor/` – monitor page (`index.html`, `app.js`, `style.css`) and its committed data (`data/*.json`, `data/partidos.geojson`)
 - `pipeline/` – Python pipeline that computes each fortnight (`config.py` holds everything adjustable)
@@ -39,7 +39,7 @@ This repository contains a single-page landing site for NODOAGRO, a consultancy 
    ```bash
    npm install
    ```
-2. Rebuild the CSS after changing classes in `index.html` or `src/input.css`:
+2. Build the CSS, and rebuild it after changing classes in `index.html` or `src/input.css`:
    ```bash
    npm run build    # or: npm run watch
    ```
@@ -54,6 +54,6 @@ This repository contains a single-page landing site for NODOAGRO, a consultancy 
 
 ## Deployment
 
-The site is deployed to GitHub Pages by `.github/workflows/publicar.yml` (Settings → Pages → Source: GitHub Actions) on every push to `main`, with the custom domain `www.nodoagro.com.ar`. Run `npm run build` and commit `css/styles.css` before pushing.
+The site is deployed to GitHub Pages by `.github/workflows/publicar.yml` (Settings → Pages → Source: GitHub Actions) on every push to `main`, with the custom domain `www.nodoagro.com.ar`. The workflow builds the CSS and checks the site; if anything fails, the previous publication stays online.
 
 The monitor updates itself: `.github/workflows/monitor.yml` runs on the 3rd and 18th of each month, uploads the rasters to the `monitor-datos` release, commits `monitor/data/*.json` and redeploys. To run it by hand: Actions → Monitor satelital → Run workflow.

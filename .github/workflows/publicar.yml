@@ -1,5 +1,6 @@
-# Arma _site/ con armar_sitio.py (landing + monitor + rásters del release
-# monitor-datos) y lo publica en GitHub Pages.
+# Compila el CSS, revisa la sintaxis, arma _site/ con armar_sitio.py (landing + monitor +
+# rásters del release monitor-datos) y lo publica en GitHub Pages. Si algo falla antes de
+# desplegar, queda online la publicación anterior.
 # En el repo: Settings → Pages → Source: GitHub Actions.
 name: Publicar sitio
 
@@ -26,15 +27,25 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       # ref: la rama, no el commit que disparó el workflow, para incluir los JSON que acaba de commitear monitor.yml
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.ref_name }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Revisar la sintaxis
+        run: |
+          python3 -m py_compile armar_sitio.py pipeline/*.py
+          node --check monitor/app.js
       - run: python3 armar_sitio.py --release
         env:
           GH_TOKEN: ${{ github.token }}
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
       - id: deploy
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

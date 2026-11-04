@@ -1,12 +1,12 @@
 # Pendientes del sitio NODOAGRO
 
-Última actualización: 29 de octubre de 2026
+Última actualización: 3 de noviembre de 2026
 
 ## 1. Verificar ya (5 minutos)
 
 - [ ] **WhatsApp:** desde un celular, tocar el botón verde flotante y confirmar que abre el chat con el **2929-410181** y el mensaje ya escrito.
 - [ ] **Segundo teléfono:** tocar el **2923-409096** en la sección Contacto y confirmar que llama bien. Está cargado como celular (`+54 9 2923 409096`). Si es un fijo, hay que sacarle el 9 en `index.html`: en el enlace `tel:` y en los datos estructurados (JSON-LD).
-- [ ] **Preguntas frecuentes:** leer las 5 respuestas y confirmar que sean correctas, sobre todo "¿Por qué el estudio agroeconómico es el primer paso de una partición rural?".
+- [ ] **Preguntas frecuentes:** leer las 6 respuestas y confirmar que sean correctas.
 
 ## 2. Google (lo que más pesa para aparecer en búsquedas)
 
@@ -50,9 +50,7 @@
 
 ## 6. Mantenimiento
 
-- **Si cambian textos:** editar `index.html`, hacer commit y push a `main`. Se publica solo en alrededor de un minuto.
-- **Si agregan o cambian clases de Tailwind:** correr `npm run build` antes del commit; si no, esos estilos no se ven en el sitio publicado. Además, cambiar el número de `css/styles.css?v=...` en `index.html` (poner la fecha del día), para que los navegadores no sigan usando el CSS viejo.
-- **El monitor se actualiza solo** los días 3 y 18 de cada mes. Si falla, GitHub manda un email; se puede volver a correr desde Actions.
+- **Si cambian textos o estilos:** editar `index.html`, hacer commit y push a `main`. Se publica solo en alrededor de un minuto, con el CSS compilado y el año del pie al día. Si algo falla, GitHub manda un email y queda online la versión anterior.
+- **El monitor se actualiza solo** los días 3 y 18 de cada mes. Si falla, GitHub manda un email; se puede volver a correr desde Actions, y si no, la corrida siguiente recupera la quincena que faltó.
 - **Si el contenido cambia bastante:** actualizar la fecha `<lastmod>` en `sitemap.xml`.
-- **En enero:** actualizar el año del pie de página (`© 2026`).
 - **Si cambian un teléfono o el email:** está repetido en varios lugares; la lista completa está en `CLAUDE.md`.

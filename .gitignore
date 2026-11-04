@@ -1,5 +1,7 @@
 .DS_Store
 node_modules/
+# Lo compila publicar.yml; en local, npm run build
+css/styles.css
 # Monitor satelital: salidas del pipeline y sitio armado (los rásters viven en el release monitor-datos)
 _site/
 salida/

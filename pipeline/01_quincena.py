@@ -30,7 +30,8 @@ else:
     ultima = date.fromisoformat(registradas[0]["id"]) if registradas else None
     inicios = _datos.pendientes(date.today(), ultima)
     if not inicios:
-        raise SystemExit(f"No hay quincenas pendientes: la última cerrada ({ultima}) ya está registrada")
+        print(f"No hay quincenas pendientes: la última cerrada ({ultima}) ya está registrada")
+        raise SystemExit(0)
 
 partidos = _quincena.leer_partidos()
 for inicio in inicios:
