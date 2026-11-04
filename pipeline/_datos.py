@@ -25,6 +25,21 @@ def ultima_cerrada(hoy):
     return anterior.replace(day=16)
 
 
+def pendientes(hoy, ultima_registrada=None):
+    """Quincenas cerradas posteriores a la última registrada, de la más vieja a la más nueva.
+
+    Sin nada registrado, solo la última cerrada (el pasado lo carga 02_historico.py).
+    """
+    q = ultima_cerrada(hoy)
+    if ultima_registrada is None:
+        return [q]
+    faltan = []
+    while q > ultima_registrada:
+        faltan.append(q)
+        q = ultima_cerrada(q)
+    return faltan[::-1]
+
+
 def quincenas_del_anio(anio, hasta=None):
     hasta = hasta or date.max
     for mes in range(1, 13):
@@ -47,10 +62,12 @@ def _leer(ruta, vacio):
 
 
 def _escribir(ruta, datos):
+    # allow_nan=False: un NaN no es JSON válido y dejaría sin cargar toda la página del monitor.
+    # Mejor que falle la corrida; se serializa antes de abrir para no truncar el archivo.
+    texto = json.dumps(datos, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
     ruta.parent.mkdir(parents=True, exist_ok=True)
     with open(ruta, "w") as f:
-        json.dump(datos, f, ensure_ascii=False, separators=(",", ":"))
-        f.write("\n")
+        f.write(texto + "\n")
 
 
 def leer_serie(ruta=None):

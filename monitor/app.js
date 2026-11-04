@@ -141,7 +141,11 @@ function leyendaAlertas() {
 // entero; GitHub Pages sí (206), así que en el sitio publicado se lee por partes.
 const tiffs = new Map();
 function abrirTiff(url) {
-  if (!tiffs.has(url)) tiffs.set(url, GeoTIFF.fromUrl(url, { allowFullFile: true }));
+  if (!tiffs.has(url)) {
+    const tiff = GeoTIFF.fromUrl(url, { allowFullFile: true });
+    tiff.catch(() => tiffs.delete(url));   // un error de red no queda guardado: se puede reintentar
+    tiffs.set(url, tiff);
+  }
   return tiffs.get(url);
 }
 
@@ -212,18 +216,23 @@ async function iniciar() {
 
   const mapa = L.map("mapa", { zoomControl: true });
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 16, attribution: "© OpenStreetMap",
+    maxZoom: 16, attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(mapa);
   mapa.createPane("indice").style.zIndex = 350;
 
   const publicadas = quincenas.quincenas.filter((q) => q.publicada);
   const ultima = quincenas.quincenas[0];
+  let avisoQuincena = "";
   if (ultima && !ultima.publicada) {
-    $("aviso").hidden = false;
-    $("aviso").textContent = publicadas.length
+    avisoQuincena = publicadas.length
       ? `La ${nombreQuincena(ultima.id)} vino muy nublada (${ultima.valido_pct}% de la zona sin nubes): mostramos la anterior.`
       : "Todavía no hay una quincena con suficientes imágenes despejadas.";
   }
+  const mostrarAviso = (texto) => {
+    $("aviso").hidden = !texto;
+    $("aviso").textContent = texto;
+  };
+  mostrarAviso(avisoQuincena);
   $("actualizado").textContent = textoActualizado(quincenas.actualizado);
 
   let indiceSel = ANCLAS[location.hash.slice(1)] ?? "ndvi";
@@ -293,13 +302,19 @@ async function iniciar() {
     },
   });
 
+  // Solo vale el último pedido: con conexión lenta, tocar pestañas seguido no deja capas
+  // encimadas ni la del satélite arriba de Alertas
+  let ultimoPedido = 0;
+
   async function mostrarIndice() {
+    const pedido = ++ultimoPedido;
     document.querySelectorAll(".indices button").forEach((b) => {
       b.setAttribute("aria-pressed", b.dataset.indice === indiceSel);
     });
     if (capaIndice) mapa.removeLayer(capaIndice);
     capaIndice = null;
     tiffSel = null;
+    mostrarAviso(avisoQuincena);
     capaPartidos.setStyle(estilo);
     const q = publicadas.find((x) => x.id === quincenaSel);
     if (q) {
@@ -318,15 +333,18 @@ async function iniciar() {
     $("leyenda").innerHTML = leyenda(cfg);
     if (!q) return;
     try {
-      tiffSel = await abrirTiff(`data/${q.archivos[indiceSel]}`);
-      capaIndice = new CapaCog(tiffSel, tablaDeColores(cfg), {
-        pane: "indice", bounds: await limitesCog(tiffSel), opacity: 1 - $("opacidad").value / 100,
+      const tiff = await abrirTiff(`data/${q.archivos[indiceSel]}`);
+      const bounds = await limitesCog(tiff);
+      if (pedido !== ultimoPedido) return;
+      tiffSel = tiff;
+      capaIndice = new CapaCog(tiff, tablaDeColores(cfg), {
+        pane: "indice", bounds, opacity: 1 - $("opacidad").value / 100,
         tileSize: 256, maxZoom: 18,
       }).addTo(mapa);
     } catch (e) {
-      $("aviso").hidden = false;
-      $("aviso").textContent = "No se pudo cargar la capa de esta quincena. Probá de nuevo en un rato.";
       console.error(e);
+      if (pedido !== ultimoPedido) return;
+      mostrarAviso("No se pudo cargar la capa de esta quincena. Probá de nuevo en un rato.");
     }
     mostrarPartido();
   }
@@ -472,6 +490,6 @@ function textoActualizado(iso) {
 
 iniciar().catch((e) => {
   $("aviso").hidden = false;
-  $("aviso").textContent = "El monitor se está preparando: la primera actualización llega en los próximos días.";
+  $("aviso").textContent = "No se pudo cargar el monitor. Probá de nuevo en un rato.";
   console.error(e);
 });

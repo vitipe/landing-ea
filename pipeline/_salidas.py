@@ -14,7 +14,7 @@ import config  # noqa: E402
 
 SIN_DATO = 255
 
-# Misma rampa que PALETAS.ndvi en monitor/app.js
+# Misma rampa que INDICES.ndvi.paleta en monitor/app.js
 NDVI_PALETA = ["#a5673f", "#d9b26f", "#f2e394", "#a6d96a", "#4daf4a", "#1a7837", "#00441b"]
 NDVI_RANGO = (-0.1, 0.9)
 

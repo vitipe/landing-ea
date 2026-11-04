@@ -49,17 +49,24 @@ for nombre in PUBLICOS:
 # Rásters e imágenes OG del monitor
 cog = SITIO / "monitor" / "data" / "cog"
 cog.mkdir(parents=True, exist_ok=True)
+publicadas = [q for q in quincenas.get("quincenas", []) if q.get("publicada")]
 if args.release:
-    r = subprocess.run(["gh", "release", "download", RELEASE, "--dir", str(cog), "--clobber"])
-    if r.returncode != 0:
-        print(f"Aviso: no se pudo bajar el release {RELEASE}; el monitor queda sin rásters")
+    # Cortar acá deja online la publicación anterior, con sus capas
+    if publicadas:
+        r = subprocess.run(["gh", "release", "download", RELEASE, "--dir", str(cog), "--clobber"])
+        if r.returncode != 0:
+            sys.exit(f"No se pudo bajar el release {RELEASE}: no se publica, para no dejar el monitor sin capas.")
+    faltan = [f for q in publicadas for f in [*q.get("archivos", {}).values(), q.get("og")]
+              if f and not (SITIO / "monitor" / "data" / f).exists()]
+    if faltan:
+        sys.exit(f"quincenas.json nombra archivos que no están en el release {RELEASE}: {faltan}")
 elif (RAIZ / "salida").exists():
     for f in (RAIZ / "salida").iterdir():
         if f.suffix in (".tif", ".jpg"):
             shutil.copy2(f, cog / f.name)
 
 # data/og-monitor.jpg: la imagen de la quincena publicada más nueva (o la de la landing)
-og = next((q["og"] for q in quincenas.get("quincenas", []) if q.get("publicada") and q.get("og")), None)
+og = next((q["og"] for q in publicadas if q.get("og")), None)
 origen_og = SITIO / "monitor" / "data" / og if og else None
 if not (origen_og and origen_og.exists()):
     origen_og = RAIZ / "images" / "og-nodoagro.jpg"

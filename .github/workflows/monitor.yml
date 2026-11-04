@@ -1,5 +1,6 @@
 # Cada quincena: calcula los índices de Sentinel-2 (pipeline/01_quincena.py), sube los
-# rásters al release monitor-datos, poda los viejos, commitea los JSON y publica el sitio.
+# rásters al release monitor-datos, commitea los JSON, poda los viejos y publica el sitio.
+# Si falló una corrida anterior, la siguiente calcula también las quincenas que faltaron.
 # El commit de cada corrida también evita que GitHub apague el cron por inactividad (60 días).
 name: Monitor satelital
 
@@ -9,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       quincena:
-        description: "Inicio de la quincena (AAAA-MM-01 o AAAA-MM-16). Vacío: la última cerrada"
+        description: "Inicio de la quincena, para recalcularla (AAAA-MM-01 o AAAA-MM-16). Vacío: las cerradas que falten"
         required: false
 
 concurrency:
@@ -44,17 +45,14 @@ jobs:
           QUINCENA: ${{ inputs.quincena }}
           PYTHONUNBUFFERED: "1"
 
-      - name: Subir rásters y podar el release
+      # En este orden (subir, commitear, podar), los JSON de main siempre nombran rásters que
+      # existen: si el push falla, no se borró nada de lo que usa el sitio publicado
+      - name: Subir rásters
         run: |
           gh release view "$RELEASE" >/dev/null 2>&1 || gh release create "$RELEASE" --latest=false \
             --title "Datos del monitor satelital" \
             --notes "Rásters publicados en /monitor/. Los mantiene el workflow Monitor satelital: no editar a mano."
           if compgen -G "salida/*" >/dev/null; then gh release upload "$RELEASE" salida/* --clobber; fi
-          # Quedan solo los archivos que nombra quincenas.json
-          python3 -c "import json; q = json.load(open('monitor/data/quincenas.json')); print('\n'.join(f.split('/')[-1] for e in q['quincenas'] for f in [*e.get('archivos', {}).values(), e.get('og', '')] if f))" > conservar.txt
-          gh release view "$RELEASE" --json assets -q '.assets[].name' | while read -r asset; do
-            grep -qxF "$asset" conservar.txt || gh release delete-asset "$RELEASE" "$asset" -y
-          done
 
       - name: Commit de los JSON
         run: |
@@ -63,8 +61,16 @@ jobs:
           git add monitor/data/serie.json monitor/data/quincenas.json monitor/data/alertas.json
           if ! git diff --cached --quiet; then
             git commit -m "Monitor: $(python3 -c "import json; print(json.load(open('monitor/data/quincenas.json'))['quincenas'][0]['id'])")"
-            git push
+            git pull --rebase && git push
           fi
+
+      - name: Podar el release
+        run: |
+          # Quedan solo los archivos que nombra quincenas.json
+          python3 -c "import json; q = json.load(open('monitor/data/quincenas.json')); print('\n'.join(f.split('/')[-1] for e in q['quincenas'] for f in [*e.get('archivos', {}).values(), e.get('og', '')] if f))" > conservar.txt
+          gh release view "$RELEASE" --json assets -q '.assets[].name' | while read -r asset; do
+            grep -qxF "$asset" conservar.txt || gh release delete-asset "$RELEASE" "$asset" -y
+          done
 
   publicar:
     needs: quincena
